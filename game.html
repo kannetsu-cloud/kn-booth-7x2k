@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="異常を当てよう">
+<style>html,body{overscroll-behavior:none}</style>
+<title>異常を当てよう</title>
+<style>html{height:100%}body{margin:0}</style>
+<style>
+/* 配色: 夜の制御室。紺の地に、計器の水色と、押したくなる朱色のボタン。
+   レイアウト: 1180×820(iPad横)の固定ステージを画面に合わせて拡縮。左右の余白は16px以上。 */
+:root{
+  --bg:#08111f; --panel:#0e1b30; --panel2:#132340; --line:#223a5e;
+  --fg:#e9f1fc; --muted:#8ea5c4; --accent:#4cc3ff; --accent-d:#1b6fd6;
+  --alert:#ff6a45; --alert-d:#d9461f; --ok:#37d69a; --warn:#ffc24b; --bad:#ff5a5a;
+  --font:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0;display:grid;place-items:center;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#fit{position:relative;flex:none}
+#stage{position:absolute;left:0;top:0;width:1180px;height:820px;transform-origin:0 0;background:
+  radial-gradient(900px 500px at 85% -10%,#12315c55,transparent 70%),var(--bg);overflow:hidden;border-radius:6px}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.screen{position:absolute;inset:0;padding:28px 32px;display:none}
+.screen.on{display:block}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* --- タイトル --- */
+#sIntro .kick{font-size:20px;letter-spacing:.14em;color:var(--accent);margin:30px 0 0}
+#sIntro h1{font-size:88px;line-height:1.08;margin:18px 0 0;font-weight:800;letter-spacing:.01em;text-wrap:balance}
+#sIntro h1 em{font-style:normal;color:var(--alert)}
+#sIntro .lead{font-size:28px;line-height:1.6;color:#c9d9ee;margin:24px 0 0;max-width:500px}
+#sIntro .steps{position:absolute;right:32px;top:536px;width:400px;display:flex;flex-direction:column;gap:8px}
+#sIntro .step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 16px;font-size:19px;line-height:1.4;color:#c9d9ee;display:flex;gap:14px;align-items:baseline}
+#sIntro .step b{flex:none;width:92px;white-space:nowrap;font-size:17px;color:var(--accent);letter-spacing:.06em}
+.go{background:var(--alert);color:#fff;font-weight:800;border-radius:16px;box-shadow:0 8px 0 var(--alert-d),0 18px 40px #ff6a4540}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 var(--alert-d)}
+#bStart{position:absolute;left:32px;bottom:70px;width:400px;height:110px;font-size:44px;background:var(--accent-d);color:#fff;box-shadow:0 8px 0 #0f3f86,0 0 0 4px #4cc3ff55}
+#introDemo{position:absolute;right:32px;top:84px;width:560px;height:622px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 20px;overflow:hidden}
+#introDemo .dmHead{display:flex;justify-content:space-between;align-items:baseline;font-size:20px;color:#c3d3ea}
+#introDemo .dmHead b{font-size:32px;color:var(--fg);font-variant-numeric:tabular-nums}
+#dmCv{width:100%;height:250px;display:block;margin-top:6px}
+#dmBtn{margin:14px auto 0;width:380px;height:92px;border-radius:16px;background:var(--alert);color:#fff;font-weight:800;font-size:44px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 0 var(--alert-d);transition:transform .08s,box-shadow .08s}
+#dmBtn.press{transform:translateY(6px);box-shadow:0 2px 0 var(--alert-d)}
+#dmFinger{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:#ffffffaa;border:4px solid #fff;opacity:0;pointer-events:none;z-index:3;box-shadow:0 6px 18px #0008;transition:transform .12s}
+#dmFinger.tap{transform:scale(.72)}
+#dmBanner{height:64px;margin-top:22px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;border-radius:12px;background:#0b1d36;color:var(--muted);text-align:center;padding:0 10px}
+#dmBanner.p2{color:var(--alert)} #dmBanner.p3{color:var(--accent);background:#0f2a4d}
+.dmSteps{display:flex;gap:10px;margin-top:18px}
+.dmS{flex:1;border:2px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:30px;font-weight:800;color:var(--muted);transition:all .2s}
+.dmS b{color:var(--accent);margin-right:8px}
+.dmS.on{border-color:var(--accent);color:#fff;background:#12315c}
+.note{position:absolute;left:32px;right:32px;bottom:18px;font-size:14px;color:var(--muted)}
+
+/* --- プレイ画面 --- */
+#sPlay header{display:flex;align-items:center;gap:22px;height:56px}
+#sPlay .rd{font-size:22px;font-weight:800;letter-spacing:.08em;color:var(--accent)}
+#sPlay .rd small{color:var(--muted);font-weight:500;font-size:16px;margin-left:10px;letter-spacing:.02em}
+#sPlay .day{margin-left:auto;font-size:44px;font-weight:800;line-height:1}
+#sPlay .day small{font-size:20px;color:var(--muted);font-weight:500;margin-left:6px}
+#prog{position:absolute;left:32px;right:32px;top:84px;height:6px;border-radius:3px;background:var(--panel2);overflow:hidden}
+#prog i{display:block;height:100%;width:0;background:var(--accent)}
+#grid{position:absolute;left:32px;right:32px;top:106px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pn{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px 10px;height:252px;display:flex;flex-direction:column;min-width:0}
+.pn .lb{font-size:19px;color:#c3d3ea;display:flex;justify-content:space-between;align-items:baseline}
+.pn .lb span{font-size:15px;color:var(--muted)}
+.pn .vl{font-size:50px;font-weight:700;line-height:1.12;margin-top:2px}
+.pn canvas{width:100%;height:118px;margin-top:auto;display:block}
+#bAlert{position:absolute;left:32px;right:32px;bottom:34px;height:132px;font-size:56px;letter-spacing:.06em}
+#bAlert small{display:block;font-size:19px;font-weight:500;letter-spacing:.04em;opacity:.92;margin-top:2px}
+#toast{position:absolute;left:50%;top:92px;transform:translateX(-50%);background:#1a2a47;border:1px solid var(--warn);color:#ffe3a3;
+  padding:12px 22px;border-radius:999px;font-size:21px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:5;white-space:nowrap}
+#toast.on{opacity:1}
+#card{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#08111fd9;z-index:6;font-size:96px;font-weight:800}
+#card.on{display:flex}
+#card small{display:block;font-size:26px;font-weight:500;color:var(--muted);text-align:center;margin-top:6px}
+
+/* --- どの項目? --- */
+#pick{position:absolute;inset:0;background:#06101ee8;z-index:7;display:none;align-content:center;justify-content:center;text-align:center}
+#pick.on{display:grid}
+#pick h2{font-size:46px;margin:0 0 8px}
+#pick p{font-size:22px;color:var(--muted);margin:0 0 28px}
+#pick .opts{display:grid;grid-template-columns:repeat(3,300px);gap:16px;justify-content:center}
+#pick .opts button{height:96px;border-radius:14px;background:var(--panel2);border:2px solid var(--line);font-size:28px;font-weight:700}
+#pick .opts button:active{background:var(--accent-d);border-color:var(--accent)}
+#pick .skip{justify-self:center;margin-top:20px;height:70px;width:620px;border-radius:14px;background:transparent;border:2px dashed var(--line);font-size:24px;color:#c3d3ea}
+
+/* --- 答え合わせ --- */
+#sReveal{display:none}
+#sReveal.on{display:block}
+#sReveal .ttl{font-size:20px;letter-spacing:.1em;color:var(--accent);font-weight:700}
+#sReveal h2{font-size:42px;margin:6px 0 0;line-height:1.2}
+#rvChartBox{position:absolute;left:32px;top:112px;width:720px;height:380px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+#rvChart{width:100%;height:100%;display:block}
+#rvText{position:absolute;left:776px;right:32px;top:112px}
+#rvHead{font-size:30px;font-weight:800;line-height:1.25}
+#rvList{margin:8px 0 0;padding:0;list-style:none}
+#rvList li{display:flex;flex-direction:column;border-bottom:1px solid var(--line);padding:3px 0 4px;line-height:1.3}
+#rvList li span{font-size:15px;color:var(--muted);letter-spacing:.04em}
+#rvList li b{font-size:21px}
+#rvList b{font-variant-numeric:tabular-nums}
+#rvScore{margin-top:6px;font-size:19px;color:var(--muted)}
+#rvScore b{font-size:42px;color:var(--fg);margin:0 6px 0 10px;font-variant-numeric:tabular-nums}
+#rvWhy{position:absolute;left:32px;right:32px;top:510px;font-size:20px;line-height:1.6;color:#cfdcef;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#rvWhy>.why{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-height:168px}
+#rvWhy .why svg{flex:none;width:132px;height:110px}
+#rvWhy .why .wt{min-width:0}
+#rvWhy h3{margin:0 0 2px;font-size:16px;letter-spacing:.08em;color:var(--accent)}
+#bNext{position:absolute;right:32px;bottom:28px;width:380px;height:84px;font-size:32px;border-radius:14px;background:var(--accent-d);font-weight:800}
+#bNext:active{background:#154fa0}
+#rvCap{position:absolute;left:32px;bottom:44px;font-size:15px;color:var(--muted)}
+
+/* --- 最終結果 --- */
+#sFinal .kick{font-size:20px;letter-spacing:.14em;color:var(--accent);margin-top:6px}
+#fScore{font-size:150px;font-weight:800;line-height:1;margin:6px 0 0}
+#fScore small{font-size:40px;color:var(--muted);font-weight:500;margin-left:10px}
+#fRank{font-size:50px;font-weight:800;margin:8px 0 0}
+#fMsg{font-size:26px;line-height:1.6;color:#c9d9ee;margin-top:10px;max-width:480px}
+#fCases{position:absolute;right:32px;top:34px;width:600px;display:flex;flex-direction:column;gap:12px}
+.fc{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;height:148px}
+.fc .fi svg{width:112px;height:94px;display:block}
+.fc .fb{flex:1;min-width:0}
+.fc .ft{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:23px;font-weight:800}
+.fc .fr{font-size:19px;font-weight:700} .fc .fr.good{color:var(--ok)} .fc .fr.miss{color:var(--bad)} .fc .fr.late{color:var(--warn)}
+.trk{position:relative;height:38px;margin-top:14px}
+.trk::before{content:"";position:absolute;left:0;right:0;top:19px;height:4px;border-radius:2px;background:var(--panel2)}
+.trk i{position:absolute;top:19px;width:20px;height:20px;margin:-8px 0 0 -10px;border-radius:50%}
+.trk .mkS{background:var(--accent);border:3px solid #fff} .trk .mkY{background:var(--alert);border:3px solid #fff;top:19px}
+.trk .mkF{background:var(--bad);border-radius:3px;transform:rotate(45deg);width:16px;height:16px;margin:-6px 0 0 -8px}
+.fc .fl{display:flex;justify-content:space-between;font-size:15px;color:var(--muted);margin-top:4px}
+.lg{display:flex;gap:26px;font-size:20px;font-weight:700;color:#dbe7f7;margin:0 0 2px;justify-content:flex-start;white-space:nowrap}
+.lg span::before{content:"";display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:8px;vertical-align:-2px}
+.lg .s::before{background:var(--accent)} .lg .y::before{background:var(--alert)} .lg .f::before{background:var(--bad);border-radius:3px;transform:rotate(45deg) scale(.8)}
+#fCta{position:absolute;left:32px;right:32px;bottom:120px;background:linear-gradient(90deg,#10294d,#0e1b30);border:1px solid var(--accent-d);border-radius:14px;padding:20px 26px;display:flex;gap:24px;align-items:center}
+#fCta p{margin:0;font-size:25px;line-height:1.55;flex:1}
+#fCta p b{color:var(--accent)}
+#fCta .st{font-size:20px;white-space:nowrap;color:#ffe3a3;border:1px solid var(--warn);border-radius:10px;padding:12px 18px;text-align:center;line-height:1.4}
+#bAgain{position:absolute;left:32px;bottom:30px;width:340px;height:70px;font-size:26px;border-radius:14px;background:var(--panel2);border:2px solid var(--line);font-weight:700}
+#sFinal .note{left:400px;bottom:44px}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+<script>
+/* 効果音(Web Audioで合成。音源ファイル不要・オフライン動作) */
+const SND=(function(){
+  let ctx=null,master=null,on=true,btn=null;
+  try{on=localStorage.getItem('kn_snd')!=='0'}catch(e){}
+  try{if(new URLSearchParams(location.search).get('sound')==='0')on=false}catch(e){}
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}   // iPadのサイレントスイッチ対策(対応OSのみ)
+  function ac(){if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;try{ctx=new C();master=ctx.createGain();master.gain.value=.55;master.connect(ctx.destination)}catch(e){return null}}return ctx}
+  function unlock(){const c=ac();if(c&&c.state!=='running'&&c.resume)c.resume().catch(()=>{})}
+  ['pointerdown','touchend','click','keydown'].forEach(e=>addEventListener(e,unlock,{capture:true,passive:true}));
+  function tone(f,t,d,o){o=o||{};const osc=ctx.createOscillator(),g=ctx.createGain();osc.type=o.type||'sine';osc.frequency.setValueAtTime(f,t);if(o.to)osc.frequency.exponentialRampToValueAtTime(o.to,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(o.v||.3,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);osc.connect(g);g.connect(master);osc.start(t);osc.stop(t+d+.03)}
+  function noise(t,d,f0,f1,v){const n=Math.floor(ctx.sampleRate*d),buf=ctx.createBuffer(1,n,ctx.sampleRate),a=buf.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;
+    const s=ctx.createBufferSource();s.buffer=buf;const fl=ctx.createBiquadFilter();fl.type='bandpass';fl.Q.value=1.2;fl.frequency.setValueAtTime(f0,t);fl.frequency.exponentialRampToValueAtTime(f1,t+d);
+    const g=ctx.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v||.25,t+d*.3);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(fl);fl.connect(g);g.connect(master);s.start(t);s.stop(t+d+.02)}
+  const arp=(t,notes,gap,o)=>notes.forEach((f,i)=>tone(f,t+i*gap,o&&o.d||.22,{type:'triangle',v:o&&o.v||.28}));
+  const S={
+    tap:t=>tone(880,t,.07,{type:'triangle',v:.22}),
+    pick:t=>{tone(660,t,.07,{type:'triangle',v:.26});tone(990,t+.05,.1,{type:'triangle',v:.26})},
+    pop:(t,n)=>tone(520*Math.pow(1.122,Math.min(8,n||0)),t,.14,{type:'triangle',v:.3,to:900*Math.pow(1.122,Math.min(8,n||0))}),
+    step:t=>{tone(520,t,.07,{type:'triangle',v:.22});tone(780,t+.06,.12,{type:'triangle',v:.22})},
+    back:t=>{tone(780,t,.06,{type:'triangle',v:.2});tone(520,t+.06,.1,{type:'triangle',v:.2})},
+    go:t=>{tone(440,t,.2,{type:'sine',v:.25,to:880});arp(t+.12,[659,880,1318],.09,{d:.28,v:.26})},
+    round:t=>arp(t,[523,659],.1,{d:.2,v:.24}),
+    alert:t=>{tone(1320,t,.1,{type:'square',v:.1,to:880});tone(660,t+.06,.14,{type:'triangle',v:.28})},
+    early:t=>tone(220,t,.2,{type:'sawtooth',v:.1,to:180}),
+    tick:t=>tone(1800,t,.025,{type:'square',v:.035}),
+    ping:t=>{tone(1318,t,.28,{type:'sine',v:.26});tone(1976,t+.02,.2,{type:'sine',v:.1})},
+    clunk:t=>{tone(150,t,.28,{type:'sine',v:.5,to:45});noise(t,.12,800,200,.12)},
+    whoosh:t=>noise(t,.5,300,3200,.22),
+    good:t=>{arp(t,[523,659,784,1046],.09,{d:.3,v:.28});tone(1568,t+.38,.5,{type:'sine',v:.12})},
+    ok:t=>arp(t,[784,1046],.1,{d:.26,v:.26}),
+    late:t=>{tone(523,t,.13,{type:'triangle',v:.26});tone(392,t+.12,.24,{type:'triangle',v:.26})},
+    miss:t=>{tone(196,t,.26,{type:'sawtooth',v:.12,to:140});tone(147,t+.22,.4,{type:'sawtooth',v:.12,to:110})},
+    fanfare:t=>{arp(t,[523,659,784,1046,1318],.1,{d:.34,v:.3});[1046,1318,1568].forEach(f=>tone(f,t+.55,.9,{type:'triangle',v:.16}));S.sparkle(t+.7)},
+    sparkle:t=>[1568,2093,1760,2349,2637].forEach((f,i)=>tone(f,t+i*.07,.2,{type:'sine',v:.09})),
+    on:t=>S.ok(t)
+  };
+  function play(n,a){if(!on)return;const c=ac();if(!c||!S[n])return;const run=()=>{try{S[n](c.currentTime+.005,a)}catch(e){}};
+    if(c.state==='running')run();else if(c.resume)c.resume().then(()=>{if(c.state==='running')run()}).catch(()=>{})}
+  const ICON_ON='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#cfe3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#cfe3ee"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg>';
+  const ICON_OFF='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#cfe3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#cfe3ee"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+  function paintBtn(){if(btn){btn.innerHTML=on?ICON_ON:ICON_OFF;btn.setAttribute('aria-label',on?'音あり(タップで消音)':'消音中(タップで音あり)');btn.style.opacity=on?'.6':'.9'}}
+  function set(v){on=!!v;try{localStorage.setItem('kn_snd',on?'1':'0')}catch(e){}paintBtn();if(on){unlock();play('on')}}
+  function mount(){if(btn||!document.body)return;btn=document.createElement('button');btn.id='sndBtn';btn.type='button';
+    btn.style.cssText='position:fixed;top:8px;right:8px;z-index:9999;width:48px;height:48px;border-radius:50%;border:1px solid #ffffff33;background:#0b1d36cc;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;touch-action:manipulation';
+    btn.addEventListener('click',e=>{e.stopPropagation();set(!on)});paintBtn();document.body.appendChild(btn)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+  return{play,set,get on(){return on}};
+})();
+</script>
+<style>#sIntro .kick,#sFinal .kick{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;display:inline-block;padding:22px 40px;margin:8px -40px -22px;position:relative;z-index:3}</style>
+</head>
+<body>
+<div id="fit"><div id="stage">
+
+  <section class="screen on" id="sIntro" aria-label="タイトル">
+    <p class="kick">SMART COOL SYSTEM  冷却水の見張り番チャレンジ</p>
+    <h1>その異常、<br><em>何日目</em>に<br>気づく?</h1>
+    <p class="lead">いつもと違うと思ったら、<br>「異常!」をタップ。</p>
+    <div id="introDemo" aria-hidden="true">
+      <div class="dmHead"><span>電気伝導率(見本)</span><span><b id="dmDay">1</b> 日目 / 30日</span></div>
+      <canvas id="dmCv"></canvas>
+      <div id="dmBtn">異常!</div>
+      <div id="dmFinger"></div>
+      <div id="dmBanner">グラフが流れます</div>
+      <div class="dmSteps"><div class="dmS" id="dmS0"><b>1</b>見る</div><div class="dmS" id="dmS1"><b>2</b>押す</div><div class="dmS" id="dmS2"><b>3</b>比べる</div></div>
+    </div>
+    <button class="go" id="bStart" type="button">スタート</button>
+    <p class="note">※ 表示は、デモ用の疑似データと検知ロジックです。実際の機器の性能や検知時期を示すものではありません。</p>
+  </section>
+
+  <section class="screen" id="sPlay" aria-label="データの観察">
+    <header><div class="rd" id="rdLabel">ROUND 1 / 3<small>水・熱・圧力の見張り</small></div>
+      <div class="day tnum"><span id="dayNow">1</span><small>日目 / 30日</small></div></header>
+    <div id="prog"><i id="progBar"></i></div>
+    <div id="grid"></div>
+    <button class="go" id="bAlert" type="button">異常!<small>いつもと違うと思ったら押してください</small></button>
+    <div id="toast" role="status"></div>
+    <div id="card"><div>ROUND <span id="cardN">1</span><small>まもなくスタート</small></div></div>
+    <div id="pick" role="dialog" aria-label="どの項目がおかしいか選ぶ">
+      <h2>どの項目が気になりましたか?</h2><p>選ぶと、答え合わせに進みます</p>
+      <div class="opts" id="pickOpts"></div>
+      <button class="skip" id="pickSkip" type="button">なんとなく、いつもと違う</button>
+    </div>
+  </section>
+
+  <section class="screen" id="sReveal" aria-label="答え合わせ">
+    <div class="ttl" id="rvTtl">答え合わせ</div>
+    <h2 id="rvName"></h2>
+    <div id="rvChartBox"><canvas id="rvChart"></canvas></div>
+    <div id="rvText"><div id="rvHead"></div><ul id="rvList"></ul><div id="rvScore"></div></div>
+    <div id="rvWhy"><div class="why"><div id="rvCauseImg"></div><div class="wt"><h3>何が起きていたか</h3><span id="rvCause"></span></div></div><div class="why"><div id="rvEffectImg"></div><div class="wt"><h3>放置すると</h3><span id="rvEffect"></span></div></div></div>
+    <button id="bNext" type="button">次のラウンドへ</button>
+  </section>
+
+  <section class="screen" id="sFinal" aria-label="結果">
+    <div class="kick">RESULT</div>
+    <div id="fScore" class="tnum">0<small>/ 300点</small></div>
+    <div id="fRank"></div>
+    <div id="fMsg"></div>
+    <div id="fCases"></div>
+    <div id="fCta"><p><b>人が毎日見続けるのは大変。SCSなら、24時間見張ります。</b></p>
+      <div class="st">詳しくはスタッフへ</div></div>
+    <button id="bAgain" type="button">もう一度あそぶ</button>
+    <p class="note">※ デモ用の疑似データです。点数は遊びとしての目安です。</p>
+  </section>
+
+</div></div>
+
+<script>
+/* 異常を当てよう: 疑似データの生成と予兆検知ロジック(外部通信なし) */
+(function(root){
+'use strict';
+const SPD=4, DAYS=30, N=SPD*DAYS, BASE_DAYS=8;          // 1日4点 × 30日 = 120点。最初の8日を「いつもの状態」とする
+
+function rng(seed){let a=seed>>>0;return function(){a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+function gauss(r){let u=0;while(!u)u=r();const v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+// 画面に出す6項目。span = グラフの縦軸の幅(基準値 ±span)。cyc = 1日周期のゆらぎ
+const METRICS=[
+ {id:'temp', label:'戻り水温',     unit:'℃',    base:32.0, noise:0.18,  cyc:0.20, dec:1, span:6},
+ {id:'press',label:'循環圧力',     unit:'MPa',  base:0.450,noise:0.004, cyc:0.003,dec:3, span:0.06},
+ {id:'flow', label:'流量',         unit:'L/min',base:120,  noise:0.9,   cyc:1.0,  dec:0, span:20},
+ {id:'cond', label:'電気伝導率',   unit:'μS/cm',base:650,  noise:11,    cyc:0,    dec:0, span:300},
+ {id:'freq', label:'ポンプ周波数', unit:'Hz',   base:45,   noise:0.18,  cyc:0.1,  dec:1, span:8},
+ {id:'level',label:'タンク水位',   unit:'%',    base:75,   noise:0.6,   cyc:0,    dec:0, span:14},
+];
+
+// シナリオ。fail = 故障時点での各項目のズレ。noiseGain = 悪化に伴いゆらぎが増える項目
+const SCENARIOS=[
+ {id:'scale', title:'水質の悪化(スケール付着)',
+  cause:'水の中のカルシウムなどが、熱交換器の壁に少しずつ固まっていきます。',
+  effect:'熱が逃げにくくなり、金型の温度が安定しません。放置すると成形不良や高温停止につながります。',
+  failLabel:'冷却不足で成形不良・高温停止',
+  fail:{temp:3.2, cond:240, flow:-13, press:0.032, freq:2.2, level:0}, noiseGain:{}},
+ {id:'pump', title:'ポンプの劣化',
+  cause:'軸受やインペラが傷み、ポンプの力が少しずつ落ちていきます。',
+  effect:'足りない分をインバータの回転で補い続け、最後には送水が止まります。',
+  failLabel:'ポンプ停止で冷却水が止まる',
+  fail:{press:-0.05, flow:-22, freq:5.2, temp:1.8, cond:0, level:0}, noiseGain:{press:2.2, flow:1.6}},
+ {id:'leak', title:'配管からの水もれ',
+  cause:'継手や配管から、わずかな量の水が少しずつ漏れています。',
+  effect:'タンクの水が減り、やがてポンプが空運転に近づきます。',
+  failLabel:'水位低下でポンプ停止',
+  fail:{level:-20, press:-0.02, flow:-8, freq:1.6, temp:0.8, cond:0}, noiseGain:{}},
+];
+
+function generate(scn, seed){
+  const r=rng(seed);
+  const onset=10+Math.floor(r()*5);                       // 発症: 10〜14日目
+  const failDay=Math.min(onset+12+Math.floor(r()*4), 29); // 故障: 発症の12〜15日後(最長29日目)
+  const span=failDay-onset;
+  const series={}, n=failDay*SPD+1;                         // 故障の瞬間まで
+  for(const m of METRICS){
+    const f=scn.fail[m.id]||0, g=(scn.noiseGain&&scn.noiseGain[m.id])||0, ph=r()*6.283;
+    const a=[];
+    for(let i=0;i<n;i++){
+      const t=i/SPD, x=t<onset?0:Math.min(1,(t-onset)/span);
+      const dev=f*Math.pow(x,1.5);
+      const nz=m.noise*(1+g*x);
+      a.push(m.base+dev+m.cyc*Math.sin(2*Math.PI*t+ph)+nz*gauss(r));
+    }
+    series[m.id]=a;
+  }
+  return {scn, seed, onset, failDay, n, series, detect:detect(series,n)};
+}
+
+// 予兆検知: 最初の8日で「いつもの状態」を学習し、EWMA(指数移動平均)のズレが続いたら検知
+function detect(series,n){
+  const LAM=0.35, L=4.0, PERSIST=3;
+  const sig=Math.sqrt(LAM/(2-LAM));
+  const st={}; 
+  for(const m of METRICS){
+    const a=series[m.id], b=a.slice(0,BASE_DAYS*SPD);
+    const mean=b.reduce((s,v)=>s+v,0)/b.length;
+    const sd=Math.max(Math.sqrt(b.reduce((s,v)=>s+(v-mean)*(v-mean),0)/b.length), m.noise*0.5);
+    st[m.id]={mean,sd,e:mean,run:0};
+  }
+  let streak=0, hit=null;
+  for(let i=BASE_DAYS*SPD;i<n;i++){
+    const over=[];
+    for(const m of METRICS){
+      const s=st[m.id]; s.e=LAM*series[m.id][i]+(1-LAM)*s.e;
+      if(Math.abs(s.e-s.mean)>L*s.sd*sig) over.push(m.id);
+    }
+    streak=over.length?streak+1:0;
+    if(streak>=PERSIST){ hit={index:i, day:i/SPD, metrics:over}; break; }
+  }
+  return hit;   // 検知なしなら null
+}
+
+root.AnomalyEngine={SPD,DAYS,N,BASE_DAYS,METRICS,SCENARIOS,generate,detect,rng};
+if(typeof module!=='undefined') module.exports=root.AnomalyEngine;
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script>
+(function(){
+'use strict';
+const E=window.AnomalyEngine, M=E.METRICS, SPD=E.SPD;
+const Q=new URLSearchParams(location.search);
+const RATE=Math.max(1,Number(Q.get('speed'))||1)*5;      // 1秒あたりの点数(5点/秒 → 30日分=約24秒)
+const $=id=>document.getElementById(id);
+const ROUNDS=3;
+let g=null, round=0, idx=0, timer=null, early=0, phase='intro', tapDay=null, pickedMetric=null, results=[], seedBase=Number(Q.get('seed'))||0;
+const dayText=d=>(Math.floor(d+1e-9)+1)+'日目';
+
+/* ---- 画面を窓に合わせて拡縮 ---- */
+function fit(){
+  const aw=document.body.clientWidth-Math.round(parseFloat(getComputedStyle(document.body).paddingLeft)+parseFloat(getComputedStyle(document.body).paddingRight));
+  const ah=window.innerHeight;
+  const k=Math.min(aw/1180,ah/820);
+  $('fit').style.width=(1180*k)+'px'; $('fit').style.height=(820*k)+'px';
+  $('stage').style.transform='scale('+k+')';
+}
+addEventListener('resize',fit); fit();
+
+/* ---- グラフ描画 ---- */
+function prep(cv){const r=Math.max(2,window.devicePixelRatio||1),w=cv.clientWidth||cv.width,h=cv.clientHeight||cv.height;
+  if(cv.width!==Math.round(w*r)){cv.width=Math.round(w*r);cv.height=Math.round(h*r)}
+  const c=cv.getContext('2d');c.setTransform(r,0,0,r,0,0);c.clearRect(0,0,w,h);return {c,w,h}}
+function spark(cv,m,data,upto,opt){
+  const {c,w,h}=prep(cv), pad=6;
+  const X=i=>i/(E.N-1)*(w-2*pad)+pad, Y=v=>h/2-(v-m.base)/m.span*(h/2-pad);
+  c.strokeStyle='#223a5e';c.lineWidth=1;c.setLineDash([4,5]);c.beginPath();c.moveTo(pad,Y(m.base));c.lineTo(w-pad,Y(m.base));c.stroke();c.setLineDash([]);
+  c.strokeStyle='#1a2d4b';for(let d=10;d<=20;d+=10){const x=X(d*SPD);c.beginPath();c.moveTo(x,pad);c.lineTo(x,h-pad);c.stroke()}
+  if(upto<1)return;
+  c.strokeStyle=(opt&&opt.color)||'#4cc3ff';c.lineWidth=2;c.lineJoin='round';c.beginPath();
+  for(let i=0;i<=upto;i++){const x=X(i),y=Math.max(2,Math.min(h-2,Y(data[i])));i?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();
+  const ex=X(upto),ey=Math.max(2,Math.min(h-2,Y(data[upto])));c.fillStyle='#fff';c.beginPath();c.arc(ex,ey,4,0,7);c.fill();
+}
+
+/* ---- パネル ---- */
+const panels=M.map(m=>{
+  const d=document.createElement('div');d.className='pn';
+  d.innerHTML='<div class="lb">'+m.label+'<span>'+m.unit+'</span></div><div class="vl tnum">-</div><canvas></canvas>';
+  $('grid').appendChild(d);return {m,el:d,vl:d.querySelector('.vl'),cv:d.querySelector('canvas')};
+});
+function drawPlay(){
+  panels.forEach(p=>{const v=g.series[p.m.id][idx];p.vl.textContent=v.toFixed(p.m.dec);spark(p.cv,p.m,g.series[p.m.id],idx)});
+  $('dayNow').textContent=Math.floor(idx/SPD)+1;
+  $('progBar').style.width=(idx/(E.N-1)*100)+'%';
+}
+
+/* ---- 画面切り替え ---- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
+
+/* ---- イントロ: 操作デモ(自動再生。見る→押す→比べる) ---- */
+const demo=E.generate(E.SCENARIOS[0],12345);
+const DMR=14;                                   // 1秒あたりの点数
+let dmRaf=0,dmT0=0;
+const dmEl={cv:$('dmCv'),btn:$('dmBtn'),fin:$('dmFinger'),ban:$('dmBanner'),day:$('dmDay'),s:[$('dmS0'),$('dmS1'),$('dmS2')]};
+function dmCalc(){
+  const tapDay=Math.min(demo.failDay-3,demo.detect.day+4), tapIdx=Math.round(tapDay*SPD), end=demo.n-1;
+  return {tapDay,tapIdx,end,tTap:tapIdx/DMR,tEnd:end/DMR+0.5,gap:Math.max(1,Math.round(tapDay-demo.detect.day))};
+}
+const DM=dmCalc(); DM.total=DM.tEnd+4.6;
+function dmMark(c,X,Y0,Y1,day,col,label,side,row){const x=X(day*SPD);c.strokeStyle=col;c.lineWidth=2;c.beginPath();c.moveTo(x,Y0);c.lineTo(x,Y1);c.stroke();
+  c.fillStyle=col;c.font='bold 20px '+getComputedStyle(document.body).fontFamily;c.textAlign=side<0?'right':'left';c.fillText(label,x+side*6,Y0+16+(row||0)*26)}
+function dmFrame(now){
+  dmRaf=requestAnimationFrame(dmFrame);
+  const t=((now-dmT0)/1000)%DM.total, idx=Math.min(DM.end,Math.floor(t*DMR));
+  spark(dmEl.cv,M[3],demo.series.cond,idx);
+  const w=dmEl.cv.clientWidth,h=dmEl.cv.clientHeight,c=dmEl.cv.getContext('2d'),pad=6,X=i=>i/(E.N-1)*(w-2*pad)+pad;
+  const showYou=t>=DM.tTap, showScs=t>=DM.tEnd;
+  if(showYou&&!dmEl.snd){dmEl.snd=1;SND.play('alert')}else if(!showYou)dmEl.snd=0;
+  if(showYou)dmMark(c,X,22,h-pad,DM.tapDay,'#ff6a45','あなた',1,0);
+  if(showScs){dmMark(c,X,22,h-pad,demo.detect.day,'#4cc3ff','SCS',-1,0);dmMark(c,X,22,h-pad,demo.failDay,'#ff5a5a','故障',-1,1)}
+  dmEl.day.textContent=Math.floor(idx/SPD)+1;
+  // 指(タッチ表示)
+  const bx=dmEl.btn.offsetLeft+dmEl.btn.offsetWidth/2, by=dmEl.btn.offsetTop+dmEl.btn.offsetHeight/2;
+  const ap=DM.tTap-1.1, f=Math.max(0,Math.min(1,(t-ap)/1.0)), e=1-Math.pow(1-f,3);
+  const fx=bx+(1-e)*150, fy=by+(1-e)*110;
+  const fin=dmEl.fin; fin.style.left=fx+'px'; fin.style.top=fy+'px';
+  fin.style.opacity=(t>=ap&&t<DM.tTap+0.7)?1:0;
+  fin.classList.toggle('tap',t>=DM.tTap&&t<DM.tTap+0.25);
+  dmEl.btn.classList.toggle('press',t>=DM.tTap&&t<DM.tTap+0.25);
+  const ph=t>=DM.tEnd?2:(t>=ap?1:0);
+  dmEl.s.forEach((s,i)=>s.classList.toggle('on',i===ph));
+  dmEl.ban.className=ph===2?'p3':ph===1?'p2':'';
+  dmEl.ban.textContent=ph===2?('SCSは '+DM.gap+'日 早く気づきました'):ph===1?'気づいたら、タップ!':'グラフが流れます';
+}
+function startDemo(){stopDemo();dmT0=performance.now();dmRaf=requestAnimationFrame(dmFrame)}
+function stopDemo(){cancelAnimationFrame(dmRaf);dmRaf=0}
+
+/* ---- ゲーム進行 ---- */
+function newSeed(r){return (seedBase?seedBase+r*101:(Math.random()*4294967296|0)+r)}
+function startGame(){
+  SND.play('go');stopDemo();round=0;results=[];sess={id:Date.now()};nextRound();
+}
+function nextRound(){
+  const scn=E.SCENARIOS[round];
+  g=E.generate(scn,newSeed(round));idx=0;early=0;tapDay=null;pickedMetric=null;phase='card';
+  $('rdLabel').firstChild.nodeValue='ROUND '+(round+1)+' / '+ROUNDS;
+  show('sPlay');panels.forEach(p=>{p.vl.textContent='-';spark(p.cv,p.m,[],0)});$('dayNow').textContent='1';$('progBar').style.width='0';
+  $('cardN').textContent=round+1;$('card').classList.add('on');SND.play('round');
+  setTimeout(()=>{$('card').classList.remove('on');phase='play';drawPlay();timer=setInterval(tick,1000/RATE)},Q.get('speed')?150:1100);
+}
+function tick(){
+  if(phase!=='play')return;
+  if(idx>=g.n-1){endRound(false);return}
+  idx++;drawPlay();if(idx%SPD===0)SND.play('tick');
+  if(idx>=g.n-1)endRound(false);
+}
+$('bAlert').addEventListener('click',()=>{
+  if(phase!=='play')return;
+  const d=idx/SPD;
+  if(d<g.onset){early++;SND.play('early');toast('まだ「いつもの状態」です(-10点)');return}
+  SND.play('alert');tapDay=d;clearInterval(timer);phase='pick';openPick();
+});
+function openPick(){
+  const o=$('pickOpts');o.innerHTML='';
+  M.forEach(m=>{const b=document.createElement('button');b.type='button';b.textContent=m.label;b.onclick=()=>choose(m.id);o.appendChild(b)});
+  $('pick').classList.add('on');clearTimeout(openPick.t);openPick.t=setTimeout(()=>{if(phase==='pick')choose(null)},25000);
+}
+function choose(id){SND.play('pick');clearTimeout(openPick.t);pickedMetric=id;$('pick').classList.remove('on');endRound(true)}
+$('pickSkip').addEventListener('click',()=>choose(null));
+
+/* 得点: 気づいた時点から故障までの余裕日数 ÷ SCSの余裕日数 ×100。項目が当たれば+10、早すぎ(まだ異常なし)は1回-10。 */
+function scoreRound(caught){
+  if(!caught)return 0;
+  const lead=g.failDay-tapDay, ref=g.failDay-g.detect.day;
+  let s=Math.min(100,Math.round(100*lead/ref));
+  const keyHit=pickedMetric&&g.detect.metrics.includes(pickedMetric);
+  if(keyHit)s+=10;
+  return Math.max(0,Math.min(100,s-10*early));
+}
+function endRound(caught){
+  clearInterval(timer);phase='reveal';
+  const sc=scoreRound(caught);
+  results.push({scn:g.scn,g,caught,tapDay,pickedMetric,early,score:sc});logPlay();
+  showReveal(results[results.length-1]);
+}
+
+/* ---- 原因・影響のイラスト ---- */
+const IC={g:'#8ea5c4',c:'#4cc3ff',o:'#ff9a45',r:'#ff5a5a',b:'#b07a45'};
+const svg=s=>'<svg viewBox="0 0 120 100" aria-hidden="true">'+s+'</svg>';
+const ILL={
+ scale:{
+  cause:svg('<circle cx="60" cy="50" r="42" fill="none" stroke="'+IC.g+'" stroke-width="4"/><circle cx="60" cy="50" r="34" fill="none" stroke="'+IC.b+'" stroke-width="16"/><circle cx="60" cy="50" r="24" fill="#4cc3ff33" stroke="'+IC.c+'" stroke-width="2"/><circle cx="52" cy="46" r="3" fill="'+IC.c+'"/><circle cx="67" cy="55" r="3" fill="'+IC.c+'"/><circle cx="62" cy="40" r="2.5" fill="'+IC.c+'"/>'),
+  effect:svg('<rect x="50" y="8" width="20" height="60" rx="10" fill="none" stroke="'+IC.g+'" stroke-width="4"/><circle cx="60" cy="76" r="15" fill="'+IC.r+'"/><rect x="56" y="24" width="8" height="52" fill="'+IC.r+'"/><path d="M84 24q6 6 0 12t0 12M96 20q6 6 0 12t0 12" fill="none" stroke="'+IC.o+'" stroke-width="3" stroke-linecap="round"/>')},
+ pump:{
+  cause:svg('<circle cx="60" cy="50" r="42" fill="none" stroke="'+IC.g+'" stroke-width="4"/><path d="M60 50L90 50M60 50L75 76M60 50L45 76M60 50L30 50M60 50L45 24" stroke="'+IC.c+'" stroke-width="7" stroke-linecap="round"/><path d="M60 50L68 36" stroke="'+IC.r+'" stroke-width="7" stroke-linecap="round"/><path d="M72 28l8-8M76 36l10-2" stroke="'+IC.r+'" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="50" r="7" fill="#e9f1fc"/>'),
+  effect:svg('<polygon points="46,10 74,10 96,32 96,60 74,86 46,86 24,60 24,32" fill="'+IC.r+'"/><rect x="38" y="42" width="44" height="12" rx="3" fill="#fff"/>')},
+ leak:{
+  cause:svg('<rect x="6" y="14" width="108" height="22" rx="4" fill="none" stroke="'+IC.g+'" stroke-width="4"/><rect x="48" y="8" width="24" height="34" rx="3" fill="#0e1b30" stroke="'+IC.g+'" stroke-width="4"/><path d="M60 50q-6 10 0 14q6-4 0-14zM64 70q-5 9 0 12q5-3 0-12zM57 84q-4 7 0 9q4-2 0-9z" fill="'+IC.c+'"/>'),
+  effect:svg('<rect x="28" y="10" width="64" height="76" rx="4" fill="none" stroke="'+IC.g+'" stroke-width="4"/><rect x="31" y="68" width="58" height="15" fill="'+IC.c+'"/><path d="M28 30h64" stroke="'+IC.o+'" stroke-width="2" stroke-dasharray="5 5"/><path d="M60 38v20M52 50l8 10 8-10" fill="none" stroke="'+IC.r+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>')}
+};
+
+/* ---- 答え合わせ ---- */
+function showReveal(r){
+  show('sReveal');const gg=r.g,scn=r.scn;
+  $('rvTtl').textContent='ROUND '+(round+1)+' 答え合わせ';$('rvName').textContent=scn.title;
+  $('rvCause').textContent=scn.cause;$('rvEffect').textContent=scn.effect;$('rvCauseImg').innerHTML=ILL[scn.id].cause;$('rvEffectImg').innerHTML=ILL[scn.id].effect;
+  $('bNext').textContent=round+1<ROUNDS?'次のラウンドへ':'結果を見る';
+  const d=gg.detect;
+  const flagged=d.metrics.map(id=>M.find(m=>m.id===id).label).join('・');
+  const rows=[['発症',dayText(gg.onset)],['SCSが予兆を検知',dayText(d.day)+'(発症の'+Math.max(1,Math.round(d.day-gg.onset))+'日後)'],
+    ['あなたの「異常!」',r.caught?dayText(r.tapDay)+'(発症の'+Math.max(0,Math.round(r.tapDay-gg.onset))+'日後)':'押せませんでした'],['故障',dayText(gg.failDay)+' '+scn.failLabel]];
+  $('rvList').innerHTML=rows.map(x=>'<li><span>'+x[0]+'</span><b>'+x[1]+'</b></li>').join('');
+  let head;
+  if(!r.caught)head='<span style="color:var(--bad)">気づけないまま、故障に至りました</span>';
+  else{const dl=r.tapDay-d.day;head=dl<=0.5?'<span style="color:var(--ok)">SCSと同じタイミングで気づきました</span>':
+    '<span style="color:var(--warn)">SCSより '+Math.max(1,Math.round(dl))+'日 遅れ</span>'}
+  $('rvHead').innerHTML=head; 
+  $('rvScore').innerHTML='このラウンド<b>'+r.score+'</b>点'+(r.early?'<span style="font-size:16px;margin-left:8px">(早すぎ'+r.early+'回)</span>':'')+(r.pickedMetric&&d.metrics.includes(r.pickedMetric)?'<span style="font-size:16px;margin-left:8px;color:var(--ok)">項目も正解 +10</span>':'');
+  // 段階表示: 発症 → SCS → あなた → 故障
+  const m=M.find(x=>x.id===d.metrics[0]);
+  const marks=[{t:gg.onset,l:'発症',c:'#8ea5c4',dash:true},{t:d.day,l:'SCSが検知',c:'#4cc3ff'}];
+  if(r.caught)marks.push({t:r.tapDay,l:'あなた',c:'#ff6a45'});
+  marks.push({t:gg.failDay,l:'故障',c:'#ff5a5a'});
+  let k=0;drawReveal(m,gg,marks,0);
+  clearTimeout(showReveal.t);
+  const mk=l=>l==='SCSが検知'?'ping':l==='あなた'?'alert':l==='故障'?'clunk':'tap';
+  const verdict=()=>{if(!r.caught)SND.play('miss');else if(r.tapDay-d.day<=0.5)SND.play('good');else SND.play('late')};
+  const step=()=>{k++;drawReveal(m,gg,marks,k);SND.play(mk(marks[k-1].l));if(k<marks.length)showReveal.t=setTimeout(step,Q.get('speed')?30:650);else showReveal.t=setTimeout(verdict,Q.get('speed')?30:550)};
+  showReveal.t=setTimeout(step,Q.get('speed')?30:500);
+  idleArm();
+}
+function drawReveal(m,gg,marks,upto){
+  const cv=$('rvChart');const {c,w,h}=prep(cv);
+  const L=64,R=24,T=70,B=44,pw=w-L-R,ph=h-T-B;
+  const X=t=>L+t/E.DAYS*pw, Y=v=>T+ph/2-(v-m.base)/m.span*(ph/2);
+  c.font='15px '+getComputedStyle(document.body).fontFamily;c.fillStyle='#8ea5c4';c.textAlign='center';
+  for(let d=0;d<=30;d+=5){c.fillText(d?d+'日':'',X(d),h-14);c.strokeStyle='#1a2d4b';c.beginPath();c.moveTo(X(d),T);c.lineTo(X(d),T+ph);c.stroke()}
+  c.textAlign='left';c.fillText('SCSが最初にズレを見つけた項目: '+m.label+'('+m.unit+')',L,22);c.textAlign='left';c.fillText('経過日数',L,h-14);
+  for(const f of [-0.8,0,0.8]){const v=m.base+f*m.span;c.fillText(v.toFixed(m.dec),L-8,Y(v)+5);c.strokeStyle=f?'#1a2d4b':'#2b4670';c.setLineDash(f?[]:[4,5]);c.beginPath();c.moveTo(L,Y(v));c.lineTo(L+pw,Y(v));c.stroke();c.setLineDash([])}
+  const data=gg.series[m.id];c.strokeStyle='#4cc3ff';c.lineWidth=2;c.beginPath();
+  data.forEach((v,i)=>{const x=X(i/SPD),y=Math.max(T,Math.min(T+ph,Y(v)));i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();
+  const sorted=marks.map((mk,i)=>({...mk,i})).sort((a,b)=>a.t-b.t);
+  sorted.forEach((mk,j)=>{ if(mk.i>=upto)return;
+    const x=X(mk.t),row=j%2;c.strokeStyle=mk.c;c.lineWidth=2;c.setLineDash(mk.dash?[5,5]:[]);c.beginPath();c.moveTo(x,T-8-row*26);c.lineTo(x,T+ph);c.stroke();c.setLineDash([]);
+    c.fillStyle=mk.c;c.font='bold 17px '+getComputedStyle(document.body).fontFamily;c.textAlign=x>L+pw-90?'right':'left';c.fillText(mk.l,x+(c.textAlign==='left'?6:-6),T-12-row*26);
+  });
+}
+$('bNext').addEventListener('click',()=>{ SND.play('step'); if(round+1<ROUNDS){round++;nextRound()}else showFinal() });
+
+/* ---- 最終結果 ---- */
+function showFinal(){
+  phase='final';show('sFinal');
+  const total=results.reduce((s,r)=>s+r.score,0);
+  setTimeout(()=>SND.play(total>=230?'fanfare':total>=150?'good':total>=70?'ok':'late'),300);
+  $('fScore').firstChild.nodeValue=total;
+  const rank=total>=230?['冷却水の名探偵','SCSに負けない観察眼です。']:total>=150?['ベテラン技術者','かなり早く気づけました。']:
+    total>=70?['見習い見張り番','気づけたこともありました。毎日見続けるのは、大変です。']:['まずはSCSにおまかせ','じっくり見ても、小さなズレは見えにくいものです。'];
+  $('fRank').textContent=rank[0];$('fMsg').textContent=rank[1];
+  const pct=d=>Math.max(2,Math.min(98,d/E.DAYS*100)).toFixed(1)+'%';
+  $('fCases').innerHTML='<div class="lg"><span class="s">SCSが気づいた日</span><span class="y">あなたが押した日</span><span class="f">故障した日</span></div>'+results.map(r=>{
+    const d=r.g.detect, diff=r.caught?Math.round(r.tapDay-d.day):null;
+    const res=!r.caught?['気づけず','miss']:diff<=0?['SCSと同時','good']:['SCSより '+Math.max(1,diff)+'日遅れ','late'];
+    return '<div class="fc"><div class="fi">'+ILL[r.scn.id].cause+'</div><div class="fb"><div class="ft"><span>'+r.scn.title.replace(/\(.*\)/,'')+'</span><span class="fr '+res[1]+'">'+res[0]+'</span></div>'+
+      '<div class="trk"><i class="mkS" style="left:'+pct(d.day)+'"></i>'+(r.caught?'<i class="mkY" style="left:'+pct(r.tapDay)+'"></i>':'')+'<i class="mkF" style="left:'+pct(r.g.failDay)+'"></i></div>'+'</div></div>'}).join('');
+  idleArm();
+}
+$('bAgain').addEventListener('click',toIntro);
+function toIntro(){SND.play('step');clearInterval(timer);phase='intro';show('sIntro');startDemo()}
+$('bStart').addEventListener('click',startGame);
+
+/* ---- 放置したら最初に戻る(展示用) ---- */
+let idleT=null;
+function idleArm(){clearTimeout(idleT);if(phase==='final'||phase==='reveal')idleT=setTimeout(()=>{if(phase==='final'||phase==='reveal')toIntro()},Q.get('speed')?60000:75000)}
+addEventListener('pointerdown',idleArm,true);
+
+
+/* ---- 来場者の記録(この端末の中だけ・外部送信なし) / スタッフ画面 ---- */
+const LK='kn_game_log';
+const getRecs=()=>{try{return JSON.parse(localStorage.getItem(LK)||'[]')}catch(e){return[]}};
+const setRecs=a=>{try{localStorage.setItem(LK,JSON.stringify(a.slice(-500)))}catch(e){}};
+let sess={id:Date.now()};
+const dnum=d=>Math.floor(d+1e-9)+1;
+const pad2=n=>String(n).padStart(2,'0');
+const fmtTs=ms=>{const d=new Date(ms);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds())};
+const metricLabel=id=>{const m=M.find(x=>x.id===id);return m?m.label:''};
+const scnTitle=id=>{const s=E.SCENARIOS.find(x=>x.id===id);return s?s.title.replace(/\(.*\)/,''):id};
+function logPlay(){
+  if(!results.length)return;
+  const rec={id:sess.id,sec:Math.round((Date.now()-sess.id)/1000),done:results.length>=ROUNDS?1:0,total:results.reduce((s,r)=>s+r.score,0),
+    rounds:results.map(r=>({s:r.scn.id,c:r.caught?1:0,tap:r.caught?dnum(r.tapDay):'',scs:dnum(r.g.detect.day),fail:dnum(r.g.failDay),pick:r.pickedMetric||'',early:r.early,score:r.score}))};
+  const a=getRecs(),i=a.findIndex(x=>x.id===rec.id);if(i>=0)a[i]=rec;else a.push(rec);setRecs(a);
+}
+function csvText(){
+  const head=['日時','状態','所要秒','合計点'];for(let i=1;i<=ROUNDS;i++)head.push('R'+i+'_シナリオ','R'+i+'_気づいた日','R'+i+'_SCS検知日','R'+i+'_故障日','R'+i+'_異常と思った項目','R'+i+'_早押し回数','R'+i+'_点数');
+  const rows=getRecs().map(r=>{const row=[fmtTs(r.id),r.done?'完了':'途中',r.sec,r.total];
+    for(let i=0;i<ROUNDS;i++){const x=r.rounds[i];row.push(...(x?[scnTitle(x.s),x.c?x.tap:'気づけず',x.scs,x.fail,metricLabel(x.pick),x.early,x.score]:['','','','','','','']))}return row});
+  return '﻿'+[head].concat(rows).map(r=>r.join(',')).join('\r\n');
+}
+function exportCsv(){
+  const txt=csvText();
+  try{const b=new Blob([txt],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='game-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},500)}catch(e){}
+  const t=document.getElementById('gsCsv');if(t){t.style.display='block';t.value=txt;t.focus();t.select()}
+}
+function renderGStaff(){
+  const a=getRecs(),done=a.filter(r=>r.done),avg=done.length?Math.round(done.reduce((s,r)=>s+r.total,0)/done.length):0;
+  const byS={};a.forEach(r=>r.rounds.forEach(x=>{const k=x.s;(byS[k]=byS[k]||{n:0,c:0,sum:0});byS[k].n++;byS[k].c+=x.c;byS[k].sum+=x.score}));
+  const pk={};a.forEach(r=>r.rounds.forEach(x=>{if(x.pick)pk[x.pick]=(pk[x.pick]||0)+1}));
+  const rowsS=Object.keys(byS).map(k=>'<div>'+scnTitle(k)+'：気づけた '+byS[k].c+'/'+byS[k].n+'回　平均 '+Math.round(byS[k].sum/byS[k].n)+'点</div>').join('');
+  const rowsP=Object.keys(pk).sort((x,y)=>pk[y]-pk[x]).map(k=>'<div>'+metricLabel(k)+'：'+pk[k]+'回</div>').join('');
+  const list=a.slice().reverse().slice(0,25).map(r=>'<div style="border-top:1px solid #24406a;padding:8px 0">'+fmtTs(r.id)+'　'+(r.done?'完了':'途中')+'　'+r.total+'点　'+r.rounds.map(x=>(x.c?x.tap+'日目':'×')).join(' / ')+'</div>').join('');
+  $('gsBody').innerHTML='<div style="font-size:22px;margin-bottom:10px">記録 '+a.length+'件(完了 '+done.length+'件／平均 '+avg+'点)</div>'+
+    '<div style="margin-bottom:10px"><b>シナリオ別</b>'+rowsS+'</div><div style="margin-bottom:10px"><b>「異常」と思った項目</b>'+(rowsP||'<div>まだありません</div>')+'</div><b>直近の記録</b>'+(list||'<div>まだ記録がありません。</div>');
+}
+function openGStaff(){
+  let o=$('gStaff');
+  if(!o){o=document.createElement('div');o.id='gStaff';o.style.cssText='position:fixed;inset:0;z-index:10000;background:#07101f;color:#e9f1fc;overflow:auto;padding:24px 28px;font-size:18px;line-height:1.6;-webkit-overflow-scrolling:touch';
+    o.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"><b style="font-size:24px;flex:1">スタッフ画面(お客様には見せません)</b>'+
+      ['gsCsvBtn|CSVを書き出す|#4cc3ff','gsClr|記録を全消去|#ff8a6a','gsX|閉じる|#2a4d6f'].map(s=>{const[a,b,c]=s.split('|');return'<button id="'+a+'" type="button" style="min-height:52px;padding:0 20px;border-radius:12px;border:0;font-size:18px;font-weight:700;background:'+c+';color:#fff">'+b+'</button>'}).join('')+'</div>'+
+      '<div id="gsBody"></div><textarea id="gsCsv" readonly style="display:none;width:100%;height:180px;margin-top:14px;background:#0b1830;color:#cfe;border:1px solid #24406a;border-radius:8px;font-size:12px"></textarea>';
+    document.body.appendChild(o);
+    $('gsCsvBtn').onclick=exportCsv;$('gsX').onclick=()=>{o.style.display='none'};
+    $('gsClr').onclick=()=>{if(confirm('この端末の記録をすべて消去します。よろしいですか?')){setRecs([]);renderGStaff();const t=$('gsCsv');if(t)t.style.display='none'}};}
+  o.style.display='block';renderGStaff();
+}
+{ // スタッフ入口: 画面左上の小さな文字(トップ「SMART COOL SYSTEM…」/結果「RESULT」)を ①1秒長押し ②4秒以内に5回タップ
+ let lp=null,taps=[],sx=0,sy=0;
+ const inK=e=>e.target&&e.target.closest&&e.target.closest('#sIntro .kick,#sFinal .kick');
+ const start=e=>{if(!inK(e))return;const t=(e.touches&&e.touches[0])||e;sx=t.clientX;sy=t.clientY;clearTimeout(lp);lp=setTimeout(()=>{lp=null;taps=[];openGStaff()},1000)};
+ const end=()=>{if(lp){clearTimeout(lp);lp=null;const n=Date.now();taps=taps.filter(x=>n-x<4000);taps.push(n);if(taps.length>=5){taps=[];openGStaff()}}};
+ const move=e=>{const t=(e.touches&&e.touches[0])||e;if(lp&&Math.hypot(t.clientX-sx,t.clientY-sy)>40){clearTimeout(lp);lp=null}};
+ document.addEventListener('touchstart',start,{passive:true});document.addEventListener('touchend',end,{passive:true});document.addEventListener('touchmove',move,{passive:true});
+ document.addEventListener('touchcancel',()=>{clearTimeout(lp);lp=null},{passive:true});
+ document.addEventListener('mousedown',e=>{if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;start(e)});
+ document.addEventListener('mouseup',e=>{if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents)return;end()});
+ document.addEventListener('contextmenu',e=>{if(inK(e))e.preventDefault()});
+ addEventListener('keydown',e=>{if(!/INPUT|TEXTAREA/.test((e.target||{}).tagName||'')&&(e.key==='s'||e.key==='S'))openGStaff();if(e.key==='Escape'){const o=$('gStaff');if(o)o.style.display='none'}});
+ const chk=()=>{if(location.hash==='#staff')openGStaff()};addEventListener('hashchange',chk);chk();}
+
+window.__game={get g(){return g},get csv(){return csvText()},get phase(){return phase},get results(){return results},get idx(){return idx}};
+startDemo();
+})();
+</script>
+</body>
+</html>
