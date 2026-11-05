@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<meta name="robots" content="noindex,nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1139,6 +1140,12 @@ function clearRecs(){if(confirm('記録を全て消去します。よろしい�
     document.addEventListener('contextmenu',e=>{if(inHdr(e))e.preventDefault()});
   })();
 })();
+</script>
+<script>
+/* offline cache (Service Worker): only on http(s)/localhost, never breaks the page */
+try{if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+ window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+}}catch(e){}
 </script>
 </body>
 </html>

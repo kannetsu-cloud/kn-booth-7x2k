@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ja">
 <head>
+<meta name="robots" content="noindex,nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3061,6 +3062,12 @@ window.addEventListener('hashchange',()=>{const h=(location.hash||'').slice(1);i
 document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;if(e.key==='s'||e.key==='S')openStaff();if(e.key==='Escape'){const s=$('#staff');if(s)s.style.display='none'}});
 setTimeout(resize,200);
 })();
+</script>
+<script>
+/* offline cache (Service Worker): only on http(s)/localhost, never breaks the page */
+try{if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+ window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+}}catch(e){}
 </script>
 </body>
 </html>
