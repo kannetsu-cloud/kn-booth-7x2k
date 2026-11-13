@@ -1,6 +1,6 @@
-/* kn-booth offline cache  build: 1104-07 */
-var V='kn-booth-1104-07';
-var FILES=['shindan.html','game.html','kaizen.html'];
+/* kn-booth offline cache  build: 1113-01 */
+var V='kn-booth-1113-01';
+var FILES=['shindan.html','game.html','kaizen.html','scs.html'];
 self.addEventListener('install',function(e){
   e.waitUntil(caches.open(V).then(function(c){return c.addAll(FILES);}).then(function(){return self.skipWaiting();}));
 });
