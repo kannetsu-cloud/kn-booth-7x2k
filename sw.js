@@ -1,5 +1,5 @@
-/* kn-booth offline cache  build: 1127-01 */
-var V='kn-booth-1127-01';
+/* kn-booth offline cache  build: 1127-02 */
+var V='kn-booth-1127-02';
 var FILES=['shindan.html','game.html','kaizen.html','scs.html','hybrid.html','hybrid3d.html','nayami.html'];
 self.addEventListener('install',function(e){
   /* cache:'reload' を付けて、ブラウザの古い控えではなく必ずサーバから取り直す */

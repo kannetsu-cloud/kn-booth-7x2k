@@ -283,10 +283,10 @@ body.lotwin #fxc{z-index:12}
  box-shadow:inset 0 0 0 2px rgba(110,231,183,.3)}
 /* ===== 結果カード（11/26 改訂：順位・課題名・判定の3点）===== */
 #cards{top:272px;gap:30px}
-#cards .card{flex:1 1 0;min-width:0;max-height:none;height:auto;min-height:300px;padding:0;overflow:visible;
+#cards .card{position:relative;flex:1 1 0;min-width:0;max-height:none;height:auto;min-height:300px;padding:0;overflow:visible;
  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
  border-radius:22px;border:2px solid rgba(159,210,255,.3);background:rgba(255,255,255,.055)}
-.card .rk{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;white-space:nowrap;
+.card .rk{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;white-space:nowrap;
  background:none;border:0;border-radius:0;padding:0;align-self:auto;
  margin:12px 0 0;line-height:1;color:#ffd062}
 .card .rkw{display:flex;align-items:center;justify-content:center}
@@ -298,7 +298,8 @@ body.lotwin #fxc{z-index:12}
 .card .rk em{font-style:normal;font-size:20px;font-weight:900;opacity:.85;letter-spacing:.08em}
 .card .rk s{text-decoration:none;font-size:16px;font-weight:900;color:inherit;opacity:.8;letter-spacing:.22em;text-indent:.22em;margin-top:-4px}
 .card .rk b{font-size:50px;font-weight:900;letter-spacing:-.02em;color:inherit}
-.card .rk i{position:absolute;right:-6px;top:2px;font-style:normal;font-size:20px;font-weight:900;color:#a9d8ff}
+.card .rk i{position:absolute;right:16px;top:14px;font-style:normal;font-size:23px;font-weight:900;color:#a9d8ff;
+ letter-spacing:.02em;text-shadow:0 0 18px rgba(96,186,255,.55)}
 .card .nm{font-size:50px;font-weight:900;line-height:1.2;color:#fff;text-align:center;
  align-self:stretch;white-space:nowrap;overflow:hidden;margin:12px 16px 0;letter-spacing:-.015em;text-shadow:0 3px 18px rgba(0,0,0,.5)}
 .card .jd{margin:auto 14px 18px;font-size:31px;font-weight:900;line-height:1.38;text-align:center;
@@ -403,7 +404,7 @@ body.voting #glabs{opacity:1}
 #viewmsg b{display:block;font-size:46px;font-weight:900;color:#ffd062;text-shadow:0 0 30px rgba(255,190,70,.55)}
 #viewmsg i{display:block;margin-top:12px;font-style:normal;font-size:27px;font-weight:900;color:#cdeaff}
 body.view #vmode,body.view #vmsub{display:none}
-body.view #viewmsg{display:block}
+body.view.scr0 #viewmsg{display:block}
 #vmodebg{position:absolute;right:-40px;bottom:-60px;width:520px;height:300px;border-radius:50%;z-index:7;pointer-events:none;
  background:radial-gradient(ellipse at 62% 72%,rgba(3,10,24,.88) 34%,rgba(3,10,24,0) 70%)}
 body.voting #vmodebg,body.result #vmodebg{display:none}
@@ -498,7 +499,7 @@ body.voting #vmode,body.result #vmode{display:none}
   </div>
 
   <div id="adm"><div id="admb"><button id="admc" type="button">CSVをコピー</button><button id="admsnd" type="button">音：オン</button><button id="admx" type="button">閉じる</button></div>
-    <h2>投票の集計<span id="admv">版 1126-03</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
+    <h2>投票の集計<span id="admv">版 1127-02</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
   <div id="chg"><div id="chgt">集計中…</div><div id="chgb"><div id="chgf"></div></div></div>
   <canvas id="fxc"></canvas>
   <div id="hint">気になる課題をタップしてください</div>
@@ -1179,6 +1180,7 @@ const SC=[{id:'s1',ms:14000},{id:'s2',ms:11000,in:enterS2},{id:'s3',ms:12000,in:
           {id:'s4',ms:8000,in:enterS4},
           {id:'s5',ms:9000,in:enterS5,skip:()=>!prevDay()}];
 function show(i,quiet){SC.forEach((s,k)=>$(s.id).classList.toggle('on',k===i));$('sr').classList.remove('on');cur=i;
+  document.body.classList.toggle('scr0',i===0);   /* 案内はランキング画面のときだけ出す */
   field.style.display=i===0?'':'none';$('legend').style.display=(i===0&&mode!=='vote')?'':'none';
   if(SC[i].in&&!quiet)SC[i].in();
   clearInterval(vt);clearTimeout(tm);
