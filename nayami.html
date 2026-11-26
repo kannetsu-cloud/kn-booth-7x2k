@@ -156,6 +156,7 @@ body.voting #legend{display:none}
 #adm{position:absolute;inset:0;z-index:40;display:none;background:#040a18;color:#dceaff;padding:28px 34px;overflow:auto;text-align:left}
 #adm.on{display:block}
 #adm h2{margin:0 0 6px;font-size:30px;color:#5fd2ff}
+#adm #admn{margin:0 0 6px;font-weight:900;color:#9fd2ff}
 #adm p{margin:0 0 14px;font-size:17px;color:#9fb3d6}
 #adm table{border-collapse:collapse;font-size:16px;width:100%}
 #adm th,#adm td{border:1px solid #2a4068;padding:5px 12px;white-space:nowrap}
@@ -397,6 +398,12 @@ body.voting #glabs{opacity:1}
 .glab i{display:block;width:38px;height:2px;border-radius:2px;background:rgba(159,210,255,.55)}
 .glab.bare i{display:none}
 .glab.bare{gap:0}
+/* 表示専用モード（50インチ用）。投票は受けず、案内だけ出す */
+#viewmsg{position:absolute;right:46px;bottom:58px;width:440px;text-align:center;z-index:8;display:none;line-height:1.3}
+#viewmsg b{display:block;font-size:46px;font-weight:900;color:#ffd062;text-shadow:0 0 30px rgba(255,190,70,.55)}
+#viewmsg i{display:block;margin-top:12px;font-style:normal;font-size:27px;font-weight:900;color:#cdeaff}
+body.view #vmode,body.view #vmsub{display:none}
+body.view #viewmsg{display:block}
 #vmodebg{position:absolute;right:-40px;bottom:-60px;width:520px;height:300px;border-radius:50%;z-index:7;pointer-events:none;
  background:radial-gradient(ellipse at 62% 72%,rgba(3,10,24,.88) 34%,rgba(3,10,24,0) 70%)}
 body.voting #vmodebg,body.result #vmodebg{display:none}
@@ -491,7 +498,7 @@ body.voting #vmode,body.result #vmode{display:none}
   </div>
 
   <div id="adm"><div id="admb"><button id="admc" type="button">CSVをコピー</button><button id="admsnd" type="button">音：オン</button><button id="admx" type="button">閉じる</button></div>
-    <h2>投票の集計<span id="admv">版 1125-03</span></h2><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
+    <h2>投票の集計<span id="admv">版 1126-03</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
   <div id="chg"><div id="chgt">集計中…</div><div id="chgb"><div id="chgf"></div></div></div>
   <canvas id="fxc"></canvas>
   <div id="hint">気になる課題をタップしてください</div>
@@ -499,6 +506,7 @@ body.voting #vmode,body.result #vmode{display:none}
   <div id="vmodebg"></div>
   <div id="vmsub">あなたの<em>1票</em>で、<br>順位が動きます。</div>
   <button id="vmode" type="button"><s>▶</s><b>投票する</b></button>
+  <div id="viewmsg"><b>iPadから<br>投票できます</b><i>気になる課題を、3つまで。</i></div>
   <div id="vbar"><button id="vca" type="button">やめる</button><button id="vgo" type="button" disabled>この課題で投票する</button><span id="vst">0 / 3</span></div>
   <div id="nx">デモ：次の場面</div>
   <div id="wipe"></div>
@@ -546,6 +554,8 @@ const W=[
 ].map((x,i)=>Object.assign(x,{i}));
 var mode='idle';                     /* idle / vote / result */
 let people=128,lotN=0,lotWin=0;      /* 画面に出すのは累計 */
+/* own=この端末ぶん / oth=他の端末ぶんの合計。画面の数字は own+oth */
+let own={p:0,n:0,w:0,v:[]},oth={p:0,n:0,w:0,v:[]};
 let dayP=0,dayV=W.map(()=>0);        /* 保存するのは本日ぶん */
 const SHOW_FROM='2026/12/1 10:00';   /* 集計期間の開始 */
 const maxV=()=>Math.max(1,...W.map(w=>w.v));
@@ -804,7 +814,7 @@ function enterS4(){const a=$('aru');a.classList.remove('go');a.innerHTML=ARU[ai+
 /* ================= 投票 ================= */
 var sel=[],cur=-1,tm=null,vt=null,busy=false,rtm=null;
 function setHint(t){const h=$('hint');if(!t){h.classList.remove('on');return}h.textContent=t;h.classList.add('on')}
-function startVote(){if(mode!=='idle')return;mode='vote';sel=[];document.body.classList.add('voting');
+function startVote(){if(VIEW||mode!=='idle')return;mode='vote';sel=[];document.body.classList.add('voting');
   clearTimeout(tm);clearInterval(vt);if(cur!==0)show(0,true);
   $('s1k').textContent='あてはまる課題を選んでください';
   $('s1h').innerHTML='気になる課題を、<em>3つまで</em>。';
@@ -834,7 +844,7 @@ $('nx').addEventListener('pointerdown',e=>{e.stopPropagation();if(mode==='idle')
 function submit(){snd('submit');
   if(!sel.length||mode!=='vote')return;mode='result';
   const chosen=sel.slice(),before=chosen.map(w=>rankOf(w));
-  people++;document.body.classList.remove('voting','has-sel');document.body.classList.add('result');chosen.forEach(w=>w.el.classList.remove('sel'));
+  people++;netVote(chosen.map(w=>w.i));document.body.classList.remove('voting','has-sel');document.body.classList.add('result');chosen.forEach(w=>w.el.classList.remove('sel'));
   $('s1k').textContent='投票ありがとうございます！';$('s1h').innerHTML='あなたの回答が<em>ランキングに反映</em>されます。';
   $('s1s').innerHTML='';fitLine($('s1h'),82,44);
   chosen.forEach((w,k)=>dropBall(w,k*430,true));
@@ -969,7 +979,7 @@ function lotDraw(){
   if(lotBusy||mode!=='result')return; lotBusy=true;
   clearTimeout(rtm);                       /* 抽選中は自動復帰を止める */
   const win=Math.random()<LOT_RATE;
-  lotN++; if(win)lotWin++; queueSave();
+  lotN++; if(win)lotWin++; queueSave(); netLot(win);
   lotClear();snd('pick');
   document.body.classList.remove('lotwin');
   const L=$('lot'),orb=$('lorb');
@@ -1009,12 +1019,22 @@ $('ltb').addEventListener('pointerdown',e=>{e.stopPropagation();endVote()});
 
 /* ================= 保存（iPad内・オフライン） ================= */
 const DEMO=new URLSearchParams(location.search).get('demo')!=='0';
+/* ?display=1 で表示専用（50インチ）。投票は受け付けない */
+const VIEW=new URLSearchParams(location.search).get('display')==='1';
+if(VIEW)document.body.classList.add('view');
 const DKEY='nayami.v1';
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function loadAll(){try{return JSON.parse(localStorage.getItem(DKEY)||'{}')}catch(e){return{}}}
-function saveDay(){if(DEMO)return;try{const a=loadAll();a[today()]={p:people,v:W.map(w=>w.v),n:lotN,w:lotWin};localStorage.setItem(DKEY,JSON.stringify(a))}catch(e){}}
+function saveDay(){if(DEMO)return;try{const a=loadAll();
+  a[today()]={p:people,v:W.map(w=>w.v),n:lotN,w:lotWin,
+    o:{p:own.p|0,n:own.n|0,w:own.w|0,v:W.map((w,i)=>own.v[i]|0)}};
+  localStorage.setItem(DKEY,JSON.stringify(a))}catch(e){}}
 function restoreDay(){const d=loadAll()[today()];
-  if(d&&Array.isArray(d.v)&&d.v.length===W.length){W.forEach((w,i)=>w.v=d.v[i]);people=d.p||0;lotN=d.n||0;lotWin=d.w||0;return true}
+  if(d&&Array.isArray(d.v)&&d.v.length===W.length){W.forEach((w,i)=>w.v=d.v[i]);people=d.p||0;lotN=d.n||0;lotWin=d.w||0;
+    const o=d.o;
+    if(o&&Array.isArray(o.v)&&o.v.length===W.length){own={p:o.p|0,n:o.n|0,w:o.w|0,v:o.v.map(x=>x|0)}}
+    else{own={p:people,n:lotN,w:lotWin,v:W.map(w=>w.v)}}   /* 旧データは全部この端末ぶんとみなす */
+    return true}
   return false}
 /* 前日までで、いちばん新しい日の結果（昨日の1位の場面で使う）*/
 function prevDay(){try{const a=loadAll(),t=today();
@@ -1026,12 +1046,94 @@ function prevDay(){try{const a=loadAll(),t=today();
 let saveT=null;
 function queueSave(){clearTimeout(saveT);saveT=setTimeout(saveDay,1200)}
 
+/* ================= オンライン集計（Supabase） =================
+   端末ごとに「自分専用の1行」を持ち、そこへ現在の合計を上書きする。
+   足し算の取り合いが起きないので、再送しても二重に数えない。
+   画面の数字 = 自分ぶん(own) + 他の端末ぶんの合計(oth)。
+   通信が切れても端末内で加算を続け、復帰したら最新の合計を書くだけ。
+   NET.on を false にすれば、これまで通り完全オフラインで動く。      */
+const NET={
+  on:true,
+  url:'https://kbmrxtcmrmrtmilywaoo.supabase.co',
+  key:'sb_publishable_i1HHZWl0AgLEkOsWDfaBUQ_1K9Y2pgh',
+  tbl:'ipf_votes'
+};
+let netOK=null,netLast=0,netBusy=false,netDirty=false,pushT=null,netErr='';
+/* 端末名。?dev=A のように指定する。指定が無ければ自動で付ける */
+const DEV=(function(){const q=new URLSearchParams(location.search).get('dev');
+  if(q)return q.slice(0,12);
+  try{let d=localStorage.getItem('nayami.dev');
+    if(!d){d=Math.random().toString(36).slice(2,6).toUpperCase();localStorage.setItem('nayami.dev',d)}
+    return d}catch(e){return 'X'}})();
+const netLive=()=>NET.on&&!DEMO&&/^https:\/\/.+\.supabase\.co$/.test(NET.url);
+const netHd=()=>({'apikey':NET.key,'Authorization':'Bearer '+NET.key,
+  'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'});
+
+/* 自分の行を書き込む（現在の合計をそのまま上書き） */
+async function netPush(){
+  if(!netLive()||netBusy)return; netBusy=true;
+  const body=[{id:today()+'|'+DEV,day:today(),dev:DEV,
+    p:own.p|0,n:own.n|0,w:own.w|0,v:W.map((w,i)=>own.v[i]|0)}];
+  try{
+    const r=await fetch(NET.url+'/rest/v1/'+NET.tbl+'?on_conflict=id',
+      {method:'POST',headers:netHd(),body:JSON.stringify(body)});
+    if(r.ok){netDirty=false;netOK=true;netErr=''}
+    else{netOK=false;netErr='送信 '+r.status+' '+(await r.text()).slice(0,120)}
+  }catch(e){netOK=false;netErr='送信 '+String(e).slice(0,120)}
+  finally{netBusy=false}}
+
+/* その日の全端末ぶんを取得して、他の端末ぶんを合計する */
+async function netPull(){
+  if(!netLive())return;
+  try{
+    const u=NET.url+'/rest/v1/'+NET.tbl+'?day=eq.'+encodeURIComponent(today())
+            +'&select=dev,p,n,w,v';
+    const r=await fetch(u,{headers:{'apikey':NET.key,'Authorization':'Bearer '+NET.key},cache:'no-store'});
+    if(!r.ok){netOK=false;netErr='取得 '+r.status+' '+(await r.text()).slice(0,120);return}
+    const rows=await r.json();netErr='';
+    const o={p:0,n:0,w:0,v:W.map(()=>0)};
+    (rows||[]).forEach(x=>{ if(!x||x.dev===DEV)return;
+      o.p+=x.p|0;o.n+=x.n|0;o.w+=x.w|0;
+      (x.v||[]).forEach((n,i)=>{if(i<o.v.length)o.v[i]+=n|0})});
+    const ch=(o.p!==oth.p)||o.v.some((n,i)=>n!==oth.v[i]);
+    oth=o;netOK=true;netLast=Date.now();
+    if(ch){merge();queueSave();paint();if(mode==='idle')relax(80)}
+  }catch(e){netOK=false;netErr='取得 '+String(e).slice(0,120)}}
+
+/* 画面の数字を own+oth で作り直す */
+function merge(){
+  people=(own.p|0)+(oth.p|0);
+  lotN=(own.n|0)+(oth.n|0); lotWin=(own.w|0)+(oth.w|0);
+  W.forEach((w,i)=>{w.v=(own.v[i]|0)+(oth.v[i]|0)});
+  $('chip').innerHTML=chipTxt()}
+
+/* 自分ぶんを増やす。画面側の加算は既存コードがやっている */
+function netVote(ids){own.p=(own.p|0)+1;ids.forEach(i=>own.v[i]=(own.v[i]|0)+1);netTouch()}
+function netLot(win){own.n=(own.n|0)+1;if(win)own.w=(own.w|0)+1;netTouch()}
+function netTouch(){netDirty=true;queueSave();
+  if(!netLive())return;
+  clearTimeout(pushT);pushT=setTimeout(()=>{netPush().then(()=>setTimeout(netPull,1200))},900)}
+
+function netState(){ if(!netLive())return 'オフライン運用（この端末だけで集計）';
+  const t=netLast?new Date(netLast).toTimeString().slice(0,5):'—';
+  return `端末 ${DEV}　`+(netOK?'オンライン':'接続できていません')
+    +(netDirty?'　未送信あり':'')+`　最終同期 ${t}`+(netErr?'　／ '+netErr:'')}
+
+if(netLive()){
+  const iv=VIEW?5000:20000;                 /* 表示機は5秒、投票機は20秒 */
+  netPull(); setInterval(netPull,iv);
+  setInterval(()=>{if(netDirty)netPush()},8000);   /* 送り損ねの再送 */
+  setInterval(netPush,60000);                      /* 定期的に自分の行を確定させる */
+  addEventListener('online',()=>{netPush();netPull()});
+}
+
 /* ================= 集計パネル（右上を3回タップ） ================= */
 function csvAll(){const a=loadAll(),ds=Object.keys(a).sort();
   const head=['日付','投票した人数','抽選した人数','あたり','参加賞',...W.map(w=>w.n)].join(',');
   return [head,...ds.map(d=>{const n=a[d].n||0,w=a[d].w||0;
     return [d,a[d].p,n,w,n-w,...a[d].v].join(',')})].join('\n')}
 function openAdm(){const a=loadAll(),ds=Object.keys(a).sort();
+  $('admn').textContent=netState();
   $('admp').textContent=ds.length?`${ds.length}日分を記録しています。会期ぶんがすべて残ります。この画面を1枚スクリーンショットしておけば、データが消えても数字は残ります。`:'まだ保存されたデータがありません。';
   const md=d=>d.slice(5).replace('-','/');
   const tot=i=>ds.reduce((x,d)=>x+(a[d].v[i]||0),0);
@@ -1062,6 +1164,7 @@ addEventListener('pointerdown',()=>{if(mode!=='idle')touchVote()});
 
 /* ================= 起動時の復元 ================= */
 (function(){const q0=new URLSearchParams(location.search);
+  own.v=W.map(()=>0);oth.v=W.map(()=>0);
   const had=restoreDay();
   if(!had&&q0.get('demo')==='0'){W.forEach(w=>w.v=0);people=0}   // 本番は0票から。デモは仮データのまま
   restoreHead();paint();relax(400);W.forEach(w=>{w.fx=w.x;w.fy=w.y});
