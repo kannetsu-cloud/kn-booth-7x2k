@@ -499,7 +499,7 @@ body.voting #vmode,body.result #vmode{display:none}
   </div>
 
   <div id="adm"><div id="admb"><button id="admc" type="button">CSVをコピー</button><button id="admsnd" type="button">音：オン</button><button id="admx" type="button">閉じる</button></div>
-    <h2>投票の集計<span id="admv">版 1127-02</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
+    <h2>投票の集計<span id="admv">版 1127-04</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
   <div id="chg"><div id="chgt">集計中…</div><div id="chgb"><div id="chgf"></div></div></div>
   <canvas id="fxc"></canvas>
   <div id="hint">気になる課題をタップしてください</div>
@@ -804,7 +804,12 @@ function raceStep(s){const m=Math.max(1,...tl.map(a=>a[STEPS-1]));const cu=rows.
   if(lastTop>=0&&nt!==lastTop&&s>6){const g=$('gyaku');g.classList.remove('go');void g.offsetWidth;g.classList.add('go');
     flash(.26,'255,210,120');shakeIt(7);confetti(34,SW/2,300);FX.raySpd=1;cu[0].o.r.classList.add('ov');setTimeout(()=>cu[0].o.r.classList.remove('ov'),500)}
   lastTop=nt;
-  const mins=600+Math.round(s/(STEPS-1)*300);$('clk').textContent=`${Math.floor(mins/60)}:${String(mins%60).padStart(2,'0')}`}
+  /* 開場時刻から「いまの時刻」までを走らせる。未来の時刻は出さない */
+  const nw=new Date();let en=nw.getHours()*60+nw.getMinutes();
+  const cl=hallClose();
+  if(en<HALL.open+10)en=HALL.open+10; if(en>cl)en=cl;
+  const mins=HALL.open+Math.round(s/(STEPS-1)*(en-HALL.open));
+  $('clk').textContent=`${Math.floor(mins/60)}:${String(mins%60).padStart(2,'0')}`}
 function enterS3(){clearInterval(rTimer);rTimer=null;buildRace();raceStep(0);let s=0;clearInterval(rTimer);rTimer=setInterval(()=>{s++;if(s>=STEPS){clearInterval(rTimer);return}raceStep(s)},115)}
 
 /* ================= あるある ================= */
@@ -1020,6 +1025,9 @@ $('ltb').addEventListener('pointerdown',e=>{e.stopPropagation();endVote()});
 
 /* ================= 保存（iPad内・オフライン） ================= */
 const DEMO=new URLSearchParams(location.search).get('demo')!=='0';
+/* 会期 2026/12/1(火)〜5(土) 10:00〜17:00、最終日のみ16:00。変更はここだけ */
+const HALL={open:10*60,close:17*60,lastDay:'2026-12-05',lastClose:16*60};
+const hallClose=()=>today()===HALL.lastDay?HALL.lastClose:HALL.close;
 /* ?display=1 で表示専用（50インチ）。投票は受け付けない */
 const VIEW=new URLSearchParams(location.search).get('display')==='1';
 if(VIEW)document.body.classList.add('view');
