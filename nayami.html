@@ -274,6 +274,27 @@ body.lotwin #fxc{z-index:12}
  font-family:inherit;font-size:26px;font-weight:800;color:rgba(206,226,255,.72);border-bottom:2px solid rgba(206,226,255,.34);padding:0 2px 4px}
 #ltb.on{animation:lfio .4s .5s ease forwards}
 @keyframes lfio{to{opacity:1}}
+/* ===== 11/26 改訂 ===== */
+#legend{display:none!important}
+#s2g{position:absolute;left:0;right:0;top:880px;z-index:5;text-align:center;opacity:0;
+ font-size:40px;font-weight:900;color:#9fd2ff;letter-spacing:.04em}
+#s2g b{color:#ffc23d;font-size:48px;margin:0 4px}
+#vmsub{position:absolute;right:52px;bottom:160px;width:324px;z-index:8;text-align:center;
+ font-size:24px;font-weight:900;line-height:1.35;color:#dce9fb;letter-spacing:.02em;
+ text-shadow:0 2px 12px rgba(0,0,0,.9)}
+#vmsub em{font-style:normal;color:#ffd77a}
+body.voting #vmsub,body.result #vmsub{display:none}
+/* 昨日の1位 */
+#s5k{position:absolute;left:0;right:0;top:150px;text-align:center;font-size:33px;font-weight:900;
+ color:#5fd2ff;letter-spacing:.2em}
+#s5n{position:absolute;left:0;right:0;top:250px;text-align:center;white-space:nowrap;
+ font-size:124px;font-weight:900;color:#fff;letter-spacing:-.02em;text-shadow:0 0 40px rgba(90,170,255,.8)}
+#s5c{position:absolute;left:0;right:0;top:430px;text-align:center;font-size:72px;font-weight:900;color:#9fd2ff}
+#s5c b{color:#fff;font-size:92px}
+#s5d{position:absolute;left:0;right:0;top:560px;text-align:center;font-size:30px;font-weight:900;
+ color:#7f93b4;letter-spacing:.1em}
+#s5e{position:absolute;left:0;right:0;top:700px;text-align:center;font-size:62px;font-weight:900;
+ color:#ffc23d;text-shadow:0 0 30px rgba(255,180,60,.6)}
 /* ===== 11/25 改訂 ===== */
 #admv{margin-left:18px;font-size:14px;font-weight:700;color:#7f93b4;letter-spacing:.06em}
 #s1s{position:absolute;left:0;right:0;top:197px;text-align:center;z-index:6;white-space:nowrap;
@@ -307,23 +328,11 @@ body.voting #vmodebg,body.result #vmodebg{display:none}
 body.voting #vmode,body.result #vmode{display:none}
 #s2k{font-variant-numeric:tabular-nums}
 </style>
-<meta name="robots" content="noindex,nofollow">
-<link rel="apple-touch-icon" href="icon-nayami.png">
-<link rel="icon" type="image/png" href="icon-nayami.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="課題調査">
-<script>
-/* オフライン対応（リポジトリ共通の sw.js を使う）*/
-if('serviceWorker' in navigator && /^https?:$/.test(location.protocol))
-  addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
-</script>
 </head><body>
 <div id="stage"><div id="shake">
   <canvas id="bgc"></canvas>
   <div id="demo">演出デモ（票数は仮のデータ）　確認用 1125-03</div>
-  <div id="chip">累計 128人</div>
+  <div id="chip">本日 128人</div>
 
   <div class="sc" id="s1">
     <div class="kicker" id="s1k">プラスチック成形業界「現場のリアルな課題」大調査！</div>
@@ -342,10 +351,19 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol))
     <div id="s2n"></div>
     <div id="s2c"><span id="cn">0</span><small>票</small></div>
     <div id="s2e">あなたの現場は、どうですか。</div>
+    <div id="s2g"></div>
+  </div>
+
+  <div class="sc" id="s5">
+    <div id="s5k">昨日、いちばん多かった課題</div>
+    <div id="s5n"></div>
+    <div id="s5c"><b>0</b>票</div>
+    <div id="s5d"></div>
+    <div id="s5e">今日は、どうなるでしょうか。</div>
   </div>
 
   <div class="sc" id="s3"><div class="s3w">
-    <div class="kicker">ここまでの動きを、10秒でリプレイ</div>
+    <div class="kicker">今日の動きを、10秒でリプレイ</div>
     <h1 style="text-align:left;left:110px;font-size:54px;top:146px">ランキングは、こう動いた。</h1>
     <div id="clkl">時刻</div><div id="clk">10:00</div>
     <div id="race"></div>
@@ -364,7 +382,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol))
     <div id="stamp">▲ 順位が上がりました</div>
     <div id="cards"></div>
     <div id="srg"></div>
-    <div id="lotk">ご参加のお礼に、全員に景品をご用意しています</div>
+    <div id="lotk">全員に景品があります</div>
     <button id="lotb" type="button">抽選をする<span class="gl"></span></button>
     <button id="srb" type="button">最初の画面に戻る</button>
   </div>
@@ -383,6 +401,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol))
   <div id="hint">気になる課題をタップしてください</div>
   <div id="cta">画面の課題をタップして、一票を入れる</div>
   <div id="vmodebg"></div>
+  <div id="vmsub">あなたの<em>1票</em>で、<br>順位が動きます。</div>
   <button id="vmode" type="button"><s>▶</s><b>投票する</b></button>
   <div id="vbar"><button id="vca" type="button">やめる</button><button id="vgo" type="button" disabled>この課題で投票する</button><span id="vst">0 / 3</span></div>
   <div id="nx">デモ：次の場面</div>
@@ -526,9 +545,12 @@ function restoreHead(){
   $('s1k').textContent='プラスチック成形業界';
   $('s1h').innerHTML='「現場のリアルな課題」<em>大調査！</em>';
   $('s1s').innerHTML=tot()<=10?'<em>最初の一票</em>を、あなたから。'
-                              :'いま、いちばん多い課題は。';
+                              :'今日、いちばん多い課題は。';
   fitLine($('s1h'),82,44);fitLine($('s1s'),36,24);}
-function nowHM(){const d=new Date();return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+const YOBI=['日','月','火','水','木','金','土'];
+function todayLabel(){const d=new Date();return `${d.getMonth()+1}/${d.getDate()}（${YOBI[d.getDay()]}）`}
+function dLabel(k){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(k);if(!m)return k;
+  const d=new Date(+m[1],+m[2]-1,+m[3]);return `${+m[2]}/${+m[3]}（${YOBI[d.getDay()]}）`}
 
 /* ================= 盤面 ================= */
 const field=$('field'),FW=SW,FH=690;
@@ -547,9 +569,11 @@ W.forEach(w=>{const e=document.createElement('div');e.className='orb';
   w.el=e;w.ctEl=e.querySelector('.ct');const sl=SLOT.indexOf(w.i);
   w.x=FW*((sl%6)+.5)/6+(R()-.5)*60;w.y=FH*(sl<6?.27:.735)+(R()-.5)*56;w.ph=R()*6.28;w.sp=.5+R()*.6;
   e.addEventListener('pointerdown',ev=>{ev.stopPropagation();pick(w)})});
-function chipTxt(){return '累計 '+people+'人'}
+function chipTxt(){return '本日 '+people.toLocaleString()+'人'}
 function paint(){const m=maxV(),top=W.reduce((a,b)=>b.v>a.v?b:a),K=fitK();
   const hr=Math.min(1,tot()/14),V=(mode==='vote');
+  /* 票数は上位3つだけ。18個ぶん並べると通路から読めずノイズになる */
+  const T3=W.slice().sort((a,b)=>b.v-a.v).slice(0,3);
   W.forEach(w=>{const sl=w.el.classList.contains('sel');
     const d=V?VD():Math.round(size(w)*K),
           c=V?(sl?VOTE_ON:VOTE_OFF):heatCss((w.v/m)*hr);w.d=d;
@@ -557,7 +581,8 @@ function paint(){const m=maxV(),top=W.reduce((a,b)=>b.v>a.v?b:a),K=fitK();
     const bf=Math.max(29,d*.145);w.el.style.fontSize=bf+'px';
     const lb=w.el.querySelector('.lb'),av=d*.80;
     if(lb&&lb.scrollWidth>av)w.el.style.fontSize=Math.max(16,bf*av/lb.scrollWidth)+'px';
-    w.el.style.background=c.bg;w.ctEl.textContent=V?'':w.v+'票';
+    w.el.style.background=c.bg;
+    w.ctEl.textContent=(V||!w.v||T3.indexOf(w)<0)?'':w.v+'票';
     w.el.style.boxShadow=sl?(V?VOTE_ON.glow:'0 0 0 8px #fff,0 0 58px rgba(255,255,255,.62)'):c.glow;
     w.el.classList.toggle('hot',!V&&w===top&&top.v>=3)});
   $('chip').textContent=chipTxt()}
@@ -617,9 +642,16 @@ function autoVote(){
 
 /* ================= スロット（1位発表） ================= */
 let s2tm=[];
-function s2Period(){$('s2k').textContent=`リアルタイム集計　${SHOW_FROM} 〜 ${nowHM()}`}
+function s2Period(){$('s2k').textContent=`本日 ${todayLabel()}`}
+function s2Gap(){const r=W.slice().sort((a,b)=>b.v-a.v),g=$('s2g');
+  if(r.length<2||!r[0].v){g.style.opacity=0;return}
+  const d=r[0].v-r[1].v;
+  g.innerHTML=d===0?'2位と<b>同数</b>。次の1票で入れ替わります'
+                   :`2位との差は<b>${d}</b>票`;
+  g.style.transition='opacity .6s';g.style.opacity=0;
+  setTimeout(()=>{g.style.opacity=1},5200)}
 function enterS2(){
-  s2tm.forEach(clearTimeout);s2tm=[];s2Period();
+  s2tm.forEach(clearTimeout);s2tm=[];s2Period();s2Gap();
   const top=W.reduce((a,b)=>b.v>a.v?b:a),ti=W.indexOf(top);
   $('roll').classList.remove('land');
   ['s2w','s2n','s2c','s2e'].forEach(id=>$(id).classList.remove('go'));
@@ -702,7 +734,7 @@ $('nx').addEventListener('pointerdown',e=>{e.stopPropagation();if(mode==='idle')
 function submit(){snd('submit');
   if(!sel.length||mode!=='vote')return;mode='result';
   const chosen=sel.slice(),before=chosen.map(w=>rankOf(w));
-  people++;dayP++;document.body.classList.remove('voting','has-sel');document.body.classList.add('result');chosen.forEach(w=>w.el.classList.remove('sel'));
+  people++;document.body.classList.remove('voting','has-sel');document.body.classList.add('result');chosen.forEach(w=>w.el.classList.remove('sel'));
   $('s1k').textContent='ありがとうございます';$('s1h').innerHTML='<em>一票</em>、入ります。';
   $('s1s').innerHTML='';fitLine($('s1h'),82,44);
   chosen.forEach((w,k)=>dropBall(w,k*430,true));
@@ -806,7 +838,7 @@ function showResult(chosen,before){setTimeout(()=>snd('result'),260);
   /* 冷却で解ける課題が含まれるときだけ、ひとこと案内する */
   const g=$('srg'),hit=chosen.some(w=>w.w);
   g.style.display=hit?'':'none';
-  g.innerHTML='ブース展示に<em>解決のヒント</em>があるかもしれません。ぜひお立ち寄りください。';
+  g.innerHTML='ブース内に、<em>解決のヒント</em>があります。';
   SC.forEach(s=>$(s.id).classList.remove('on'));$('sr').classList.add('on');$('s1').classList.remove('on');
   $('sr').classList.remove('done');$('lot').classList.remove('on');fitCards();
   clearTimeout(rtm);rtm=setTimeout(endVote,34000)}
@@ -855,13 +887,17 @@ const DEMO=new URLSearchParams(location.search).get('demo')!=='0';
 const DKEY='nayami.v1';
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 function loadAll(){try{return JSON.parse(localStorage.getItem(DKEY)||'{}')}catch(e){return{}}}
-function saveDay(){if(DEMO)return;try{const a=loadAll();a[today()]={p:dayP,v:dayV.slice(),n:lotN,w:lotWin};localStorage.setItem(DKEY,JSON.stringify(a))}catch(e){}}
-function restoreDay(){const a=loadAll(),ds=Object.keys(a),t=today();let got=false;
-  W.forEach(w=>w.v=0);people=0;dayP=0;dayV=W.map(()=>0);lotN=0;lotWin=0;
-  ds.forEach(d=>{const x=a[d];if(!x||!Array.isArray(x.v)||x.v.length!==W.length)return;got=true;
-    W.forEach((w,i)=>w.v+=x.v[i]);people+=x.p||0;
-    if(d===t){dayP=x.p||0;dayV=x.v.slice();lotN=x.n||0;lotWin=x.w||0}});
-  return got}
+function saveDay(){if(DEMO)return;try{const a=loadAll();a[today()]={p:people,v:W.map(w=>w.v),n:lotN,w:lotWin};localStorage.setItem(DKEY,JSON.stringify(a))}catch(e){}}
+function restoreDay(){const d=loadAll()[today()];
+  if(d&&Array.isArray(d.v)&&d.v.length===W.length){W.forEach((w,i)=>w.v=d.v[i]);people=d.p||0;lotN=d.n||0;lotWin=d.w||0;return true}
+  return false}
+/* 前日までで、いちばん新しい日の結果（昨日の1位の場面で使う）*/
+function prevDay(){try{const a=loadAll(),t=today();
+  const ds=Object.keys(a).filter(d=>d<t&&a[d]&&Array.isArray(a[d].v)&&a[d].v.length===W.length).sort();
+  if(!ds.length)return null;const d=ds[ds.length-1],x=a[d];
+  let bi=0;x.v.forEach((n,i)=>{if(n>x.v[bi])bi=i});
+  if(!x.v[bi])return null;
+  return {date:d,i:bi,n:W[bi].n,v:x.v[bi],p:x.p||0}}catch(e){return null}}
 let saveT=null;
 function queueSave(){clearTimeout(saveT);saveT=setTimeout(saveDay,1200)}
 
@@ -907,7 +943,13 @@ addEventListener('pointerdown',()=>{if(mode!=='idle')touchVote()});
   if(q0.get('demo')==='0')saveDay();})();
 
 /* ================= 進行 ================= */
-const SC=[{id:'s1',ms:14000},{id:'s2',ms:11000,in:enterS2},{id:'s3',ms:12000,in:enterS3},{id:'s4',ms:8000,in:enterS4}];
+function enterS5(){const d=prevDay();if(!d)return;
+  $('s5n').textContent=d.n;$('s5c').innerHTML=`<b>${d.v.toLocaleString()}</b>票`;
+  $('s5d').textContent=`${dLabel(d.date)}　${d.p.toLocaleString()}人が回答`;
+  fitLine($('s5n'),124,56);}
+const SC=[{id:'s1',ms:14000},{id:'s2',ms:11000,in:enterS2},{id:'s3',ms:12000,in:enterS3},
+          {id:'s4',ms:8000,in:enterS4},
+          {id:'s5',ms:9000,in:enterS5,skip:()=>!prevDay()}];
 function show(i,quiet){SC.forEach((s,k)=>$(s.id).classList.toggle('on',k===i));$('sr').classList.remove('on');cur=i;
   field.style.display=i===0?'':'none';$('legend').style.display=(i===0&&mode!=='vote')?'':'none';
   if(SC[i].in&&!quiet)SC[i].in();
@@ -918,7 +960,10 @@ function show(i,quiet){SC.forEach((s,k)=>$(s.id).classList.toggle('on',k===i));$
   else setHint('');
   tm=setTimeout(next,SC[i].ms)}
 function next(){if(busy||mode!=='idle')return;busy=true;const w=$('wipe');w.classList.remove('run');void w.offsetWidth;w.classList.add('run');
-  setTimeout(()=>{if(mode==='idle')show((cur+1)%SC.length)},460);setTimeout(()=>{busy=false},1050)}
+  setTimeout(()=>{if(mode!=='idle')return;let k=cur;
+    for(let n=0;n<SC.length;n++){k=(k+1)%SC.length;if(!(SC[k].skip&&SC[k].skip()))break}
+    show(k)},460);
+  setTimeout(()=>{busy=false},1050)}
 $('vmode').addEventListener('pointerdown',e=>{e.stopPropagation();if(mode==='idle')startVote()});
 const q=new URLSearchParams(location.search);
 if(q.get('demo')==='0'){$('demo').style.display='none';$('nx').style.display='none';stage.classList.add('bare')}
