@@ -238,7 +238,7 @@ body.lotwin #fxc{z-index:12}
  box-shadow:0 0 70px rgba(60,140,255,.72);display:flex;align-items:center;justify-content:center;
  font-size:96px;font-weight:900;color:rgba(255,255,255,.9);transform:translateY(560px) scale(.6);opacity:0}
 #lorb.at{transform:translateY(0) scale(1);opacity:1}
-#lorb.rise{animation:lris .85s cubic-bezier(.2,.9,.25,1) forwards}
+#lorb.rise{animation:lris .68s cubic-bezier(.2,.9,.25,1) forwards}
 @keyframes lris{0%{transform:translateY(560px) scale(.6);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
 #lorb.chg{animation:lchg .34s ease-in-out infinite alternate}
 @keyframes lchg{0%{transform:translateY(0) scale(1) rotate(-3deg);box-shadow:0 0 70px rgba(60,140,255,.72)}
@@ -274,6 +274,49 @@ body.lotwin #fxc{z-index:12}
  font-family:inherit;font-size:26px;font-weight:800;color:rgba(206,226,255,.72);border-bottom:2px solid rgba(206,226,255,.34);padding:0 2px 4px}
 #ltb.on{animation:lfio .4s .5s ease forwards}
 @keyframes lfio{to{opacity:1}}
+/* ===== 抽選：カプセルがパカッと開く（11/26 案②）===== */
+#lq{position:relative;z-index:2}
+#lorb.shk{animation:lshk .22s ease-in-out}
+@keyframes lshk{0%,100%{transform:translate(0,0) scale(1)}
+ 20%{transform:translate(-8px,5px) scale(1.015)}45%{transform:translate(7px,-6px) scale(.99)}
+ 72%{transform:translate(-5px,-3px) scale(1.01)}}
+#lorb.c1{box-shadow:0 0 110px rgba(190,225,255,.95);transition:box-shadow .2s}
+#lorb.c2{box-shadow:0 0 170px rgba(255,255,255,1);border-color:#fff;transition:box-shadow .2s}
+/* 殻。切り口の側がいちばん明るくなる塗りにしてある（暗い色が出ないように）*/
+.hf{position:absolute;left:-4px;right:-4px;top:-4px;bottom:-4px;border-radius:50%;z-index:1;
+ border:4px solid rgba(255,255,255,.92);opacity:0;pointer-events:none}
+.hf.t{clip-path:inset(0 0 49.5% 0);background:linear-gradient(to top,#f2fbff 0%,#bcdfff 20%,#5e9fe6 56%,#2a63ad 100%)}
+.hf.b{clip-path:inset(49.5% 0 0 0);background:linear-gradient(to bottom,#f2fbff 0%,#bcdfff 20%,#5e9fe6 56%,#2a63ad 100%)}
+#lot.win .hf.t{background:linear-gradient(to top,#fffaec 0%,#ffe9b4 20%,#f5b43a 56%,#d98b05 100%)}
+#lot.win .hf.b{background:linear-gradient(to bottom,#fffaec 0%,#ffe9b4 20%,#f5b43a 56%,#d98b05 100%)}
+#lorb.crack .hf{opacity:1}
+#lorb.crack .hf.t{transform-origin:12% 100%;animation:lhfT .46s cubic-bezier(.22,1.5,.36,1) forwards}
+#lorb.crack .hf.b{transform-origin:12% 0%;animation:lhfB .46s cubic-bezier(.22,1.45,.36,1) forwards}
+@keyframes lhfT{0%{transform:translate(0,0) rotate(0)}
+ 60%{transform:translate(-11px,-62px) rotate(-23deg)}100%{transform:translate(-8px,-54px) rotate(-20deg)}}
+@keyframes lhfB{0%{transform:translate(0,0) rotate(0)}
+ 60%{transform:translate(9px,54px) rotate(19deg)}100%{transform:translate(6px,47px) rotate(16deg)}}
+#lorb.crack{background:none!important;box-shadow:none!important;border-color:transparent!important}
+#lorb.crack #lq{opacity:0;transition:opacity .1s}
+#lorb.crack.gone .hf{opacity:0;transform:translate(0,0) rotate(0) scale(.92);
+ transition:opacity .5s ease,transform .5s ease;animation:none}
+/* 中から広がる光 */
+#lcore{position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;
+ z-index:0;opacity:0;pointer-events:none;
+ background:radial-gradient(circle,#fff 0%,rgba(226,243,255,.97) 32%,rgba(150,200,255,.62) 60%,rgba(120,180,255,0) 86%)}
+#lot.win #lcore{background:radial-gradient(circle,#fff 0%,rgba(255,242,196,.97) 32%,rgba(255,200,90,.62) 60%,rgba(255,180,60,0) 86%)}
+#lorb.crack #lcore{animation:lcore .95s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes lcore{0%{opacity:1;transform:scale(.95,.3)}
+ 32%{opacity:1;transform:scale(1.5,1.15)}100%{opacity:0;transform:scale(2.7,2.4)}}
+/* 開いた瞬間のひと押し */
+#lflash{position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;
+ background:radial-gradient(52% 52% at 50% 50%,rgba(255,240,200,.34),rgba(255,210,130,.1) 48%,transparent 76%)}
+#lot.lose #lflash{background:radial-gradient(52% 52% at 50% 50%,rgba(226,243,255,.32),rgba(170,210,255,.09) 48%,transparent 76%)}
+#lot.flash #lflash{animation:lfl .45s ease-out forwards}
+@keyframes lfl{0%{opacity:1}100%{opacity:0}}
+#lot.lose #lhalo{background:radial-gradient(circle,rgba(140,200,255,.34) 0%,rgba(110,170,240,.13) 34%,transparent 62%)}
+#lot.lose #lbst{background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(180,220,255,.42) 0deg 2.6deg,transparent 2.6deg 9deg)}
+#ltx{z-index:7}
 /* ===== 11/26 改訂 ===== */
 #legend{display:none!important}
 #s2g{position:absolute;left:0;right:0;top:880px;z-index:5;text-align:center;opacity:0;
@@ -388,8 +431,9 @@ body.voting #vmode,body.result #vmode{display:none}
   </div>
 
   <div id="lot">
-    <div id="lhalo"></div><div id="lbst"></div><div id="lring"></div>
-    <div id="lorb">？</div><div id="lld">抽 選 中</div>
+    <div id="lhalo"></div><div id="lbst"></div><div id="lring"></div><div id="lflash"></div>
+    <div id="lorb"><span id="lq">？</span><span id="lcore"></span>
+      <i class="hf t"></i><i class="hf b"></i></div><div id="lld">抽 選 中</div>
     <div id="ltx"><div id="ltk"></div><div id="lth"></div><div id="lts"></div><div id="ltn"></div></div>
     <button id="ltb" type="button">最初の画面に戻る</button>
   </div>
@@ -795,9 +839,13 @@ function snd(k){ if(!SND.on) return; sndUnlock(); if(!SND.ctx) return;
                          tone(220,110,.35,'sine',.30,.02); }
   else if(k==='result'){ [1046,1568,2093].forEach((f,i)=>tone(f,f,.55,'sine',.30,i*.07)); }
   else if(k==='cancel'){ tone(420,260,.14,'sine',.30); }
-  else if(k==='roll'){ for(var i=0;i<14;i++)tone(520+i*52,520+i*52,.05,'triangle',.20,i*.085); }
+  else if(k==='roll'){ for(var i=0;i<8;i++)tone(540+i*74,540+i*74,.045,'triangle',.20,i*.072); }
   else if(k==='win'){ [1046,1318,1568,2093].forEach((f,i)=>tone(f,f,.5,'sine',.34,i*.085)); tone(262,262,.7,'triangle',.18,.02); }
-  else if(k==='lose'){ tone(520,300,.3,'sine',.34); tone(392,262,.42,'sine',.20,.1); } }
+  else if(k==='lose'){ tone(520,300,.3,'sine',.34); tone(392,262,.42,'sine',.20,.1); }
+  else if(k==='t1'){ tone(900,1300,.09,'sine',.26); }
+  else if(k==='t2'){ tone(1300,1900,.10,'sine',.30); }
+  else if(k==='open'){ tone(2200,700,.13,'sine',.30); tone(300,120,.4,'triangle',.3,.01);
+                       tone(1400,2800,.22,'sine',.22,.02); } }
 function sndToggle(){ SND.on=!SND.on; try{localStorage.setItem('nayami.snd',SND.on?'1':'0')}catch(e){}
   if(SND.on){sndUnlock();snd('pick')} return SND.on; }
 
@@ -847,8 +895,7 @@ function showResult(chosen,before){setTimeout(()=>snd('result'),260);
 const LOT_RATE=0.30;            /* 当選確率（11/20 決定）*/
 let lotT=[],lotBusy=false;
 function lotClear(){lotT.forEach(clearTimeout);lotT=[];document.body.classList.remove('lotwin');
-  const L=$('lot');L.className='';
-  $('ltx').classList.remove('big');$('lorb').className='';$('lbst').className='';$('lhalo').className='';
+  $('lot').className='';$('lorb').className='';$('lbst').className='';$('lhalo').className='';
   $('lring').className='';$('lld').className='';$('ltx').className='';$('ltb').className='';}
 function lotLater(f,ms){lotT.push(setTimeout(f,ms))}
 function lotDraw(){
@@ -861,23 +908,34 @@ function lotDraw(){
   const L=$('lot'),orb=$('lorb');
   L.classList.add('on');orb.classList.add('rise');
   lotLater(()=>{orb.classList.remove('rise');orb.classList.add('at','chg');
-    $('lring').classList.add('on');$('lld').classList.add('on');snd('roll')},860);
+    $('lring').classList.add('on');$('lld').classList.add('on');snd('roll')},680);
+  /* ① 張りつめる */
+  const shake=()=>{orb.classList.remove('shk');void orb.offsetWidth;orb.classList.add('shk')};
+  lotLater(()=>{$('lld').classList.remove('on');$('lring').classList.remove('on');
+    orb.classList.remove('chg');orb.classList.add('at','c1');shake();snd('t1')},1300);
+  lotLater(()=>{orb.classList.remove('c1');orb.classList.add('c2');shake();snd('t2')},1540);
+  /* ② パカッと開く */
   lotLater(()=>{
-    $('lld').classList.remove('on');$('lring').classList.remove('on');orb.classList.remove('chg');
-    if(win){orb.classList.add('win');$('lbst').classList.add('go');$('lhalo').classList.add('on');
-      L.classList.add('win');snd('win');document.body.classList.add('lotwin');
-      confetti(120,SW/2,300);flash(.5,'255,225,150');FX.raySpd=1.8;
+    orb.classList.remove('c2');orb.classList.add('crack');
+    L.classList.add('flash');snd('open');
+    if(win){$('lbst').classList.add('go');$('lhalo').classList.add('on');
+      L.classList.add('win');document.body.classList.add('lotwin');
+      confetti(130,SW/2,300);flash(.34,'255,225,150');FX.raySpd=1.8;
+      lotLater(()=>snd('win'),140);
       $('ltk').textContent='おめでとうございます';$('lth').textContent='あたり';
-      $('lts').textContent='景品をお受け取りください。';$('ltx').classList.add('big');
-      $('ltn').innerHTML='<b>▶</b> この画面をスタッフにお見せください';
-    }else{orb.classList.add('lose');L.classList.add('lose');snd('lose');
+      $('lts').textContent='景品をお受け取りください。';
+    }else{L.classList.add('lose');$('lbst').classList.add('go');$('lhalo').classList.add('on');
+      confetti(48,SW/2,320);flash(.3,'170,215,255');
+      lotLater(()=>snd('lose'),140);
       $('ltk').textContent='ご参加ありがとうございました';$('lth').textContent='参加賞';
-      $('lts').textContent='受付でお受け取りください。';$('ltx').classList.add('big');
-      $('ltn').innerHTML='<b>▶</b> この画面をスタッフにお見せください';}
+      $('lts').textContent='受付でお受け取りください。';}
+    $('ltx').classList.add('big');
+    $('ltn').innerHTML='<b>▶</b> この画面をスタッフにお見せください';
     lotLater(()=>{$('ltx').classList.add('on');$('ltb').classList.add('on');
       $('sr').classList.add('done');lotBusy=false;
-      clearTimeout(rtm);rtm=setTimeout(endVote,40000)},260);
-  },1980);
+      clearTimeout(rtm);rtm=setTimeout(endVote,40000)},440);
+    lotLater(()=>orb.classList.add('gone'),540);
+  },1780);
 }
 $('lotb').addEventListener('pointerdown',e=>{e.stopPropagation();lotDraw()});
 $('ltb').addEventListener('pointerdown',e=>{e.stopPropagation();endVote()});
