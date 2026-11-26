@@ -29,6 +29,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%}
 .logo{position:absolute;left:48px;top:32px;height:44px;z-index:7}
 #chip{position:absolute;right:48px;top:26px;z-index:7;font-size:31px;font-weight:900;color:#06142e;background:linear-gradient(180deg,#ffe9a8,#ffc23d);border-radius:999px;padding:7px 24px;box-shadow:0 0 22px rgba(255,194,61,.7);transition:transform .2s}
 #chip.bump{transform:scale(1.18)}
+#chip s{display:inline-block;text-decoration:none;width:2px;height:.84em;vertical-align:-.06em;
+ margin:0 13px;background:rgba(6,20,46,.4);border-radius:2px}
+#chip i{font-style:normal;font-size:.78em}
 #demo{position:absolute;left:50%;top:38px;transform:translateX(-50%);z-index:7;font-size:19px;font-weight:700;color:#8ea4c8;letter-spacing:.08em}
 #nx{position:absolute;right:40px;bottom:28px;z-index:7;font-size:15px;font-weight:700;color:#7f93b6;background:rgba(10,24,54,.8);border:1px solid rgba(120,200,255,.3);border-radius:999px;padding:6px 16px;cursor:pointer}
 .kicker{position:absolute;left:0;right:0;top:42px;text-align:center;font-size:29px;font-weight:900;color:#5fd2ff;letter-spacing:.16em;text-shadow:0 0 18px rgba(60,180,255,.9)}
@@ -304,9 +307,16 @@ body.lotwin #fxc{z-index:12}
  text-shadow:0 0 26px rgba(96,186,255,.7),0 0 10px rgba(96,186,255,.45);
  border-top:2px solid;border-image:linear-gradient(90deg,transparent,rgba(130,200,255,.6) 22%,rgba(130,200,255,.6) 78%,transparent) 1}
 .card .jd span{display:inline}
-#srg{top:648px}
-#lotk{top:778px}
-#lotb{bottom:52px;width:600px;height:104px;font-size:48px}
+/* 案内＝情報なのでライトブルー、抽選＝行動なので金。役割で色を分ける */
+#srg{top:600px;color:#cdeaff;text-shadow:0 0 26px rgba(96,186,255,.6)}
+#srg em{color:#fff;font-style:italic}
+#lotp{position:absolute;left:50%;transform:translateX(-50%);bottom:30px;width:820px;height:252px;z-index:5;
+ border-radius:26px;border:2px solid rgba(255,196,80,.3);
+ background:linear-gradient(180deg,rgba(255,190,70,.1),rgba(255,160,40,.045));
+ box-shadow:inset 0 1px 0 rgba(255,225,160,.22)}
+#sr.done #lotp{display:none}
+#lotk{top:768px;font-size:40px;color:#ffdf97;letter-spacing:.06em;text-shadow:0 0 22px rgba(255,190,70,.45)}
+#lotb{bottom:56px;width:600px;height:104px;font-size:48px}
 #srb{bottom:58px}
 /* ===== 抽選：カプセルがパカッと開く（11/26 案②）===== */
 #lq{position:relative;z-index:2}
@@ -466,6 +476,7 @@ body.voting #vmode,body.result #vmode{display:none}
     <div id="stamp">▲ 順位が上がりました</div>
     <div id="cards"></div>
     <div id="srg"></div>
+    <div id="lotp"></div>
     <div id="lotk">全員に景品があります</div>
     <button id="lotb" type="button">抽選する<span class="gl"></span></button>
     <button id="srb" type="button">最初の画面に戻る</button>
@@ -654,7 +665,11 @@ W.forEach(w=>{const e=document.createElement('div');e.className='orb';
   w.el=e;w.ctEl=e.querySelector('.ct');const sl=SLOT.indexOf(w.i);
   w.x=FW*((sl%6)+.5)/6+(R()-.5)*60;w.y=FH*(sl<6?.27:.735)+(R()-.5)*56;w.ph=R()*6.28;w.sp=.5+R()*.6;
   e.addEventListener('pointerdown',ev=>{ev.stopPropagation();pick(w)})});
-function chipTxt(){return '本日 '+people.toLocaleString()+'人'}
+/* 本日と、前日までを足した累計。初日は累計を出さない */
+function totalAll(){try{const a=loadAll(),t=today();let n=0;
+  Object.keys(a).forEach(d=>{if(d!==t)n+=(a[d].p||0)});return n}catch(e){return 0}}
+function chipTxt(){const pv=totalAll(),b='本日 '+people.toLocaleString()+'人';
+  return pv>0?b+'<s></s><i>累計 '+(pv+people).toLocaleString()+'人</i>':b}
 function paint(){const m=maxV(),top=W.reduce((a,b)=>b.v>a.v?b:a),K=fitK();
   const hr=Math.min(1,tot()/14),V=(mode==='vote');
   /* 票数は上位3つだけ。18個ぶん並べると通路から読めずノイズになる */
@@ -670,7 +685,7 @@ function paint(){const m=maxV(),top=W.reduce((a,b)=>b.v>a.v?b:a),K=fitK();
     w.ctEl.textContent=(V||!w.v||T3.indexOf(w)<0)?'':w.v+'票';
     w.el.style.boxShadow=sl?(V?VOTE_ON.glow:'0 0 0 8px #fff,0 0 58px rgba(255,255,255,.62)'):c.glow;
     w.el.classList.toggle('hot',!V&&w===top&&top.v>=3)});
-  $('chip').textContent=chipTxt()}
+  $('chip').innerHTML=chipTxt()}
 /* 盤面の幅と高さの両方に収まる大きさを出す（4:3でも切れないように）*/
 const VD=()=>{const cw=(FW-130)/9.22,ch=(FH-80)/3.60;return Math.round(Math.max(96,Math.min(192,cw,ch)))};
 const GCOL=[2,2,2,1];                       /* グループごとの列数（A6 B5 C4 D3）*/
