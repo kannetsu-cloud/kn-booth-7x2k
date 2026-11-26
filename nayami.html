@@ -274,6 +274,40 @@ body.lotwin #fxc{z-index:12}
  font-family:inherit;font-size:26px;font-weight:800;color:rgba(206,226,255,.72);border-bottom:2px solid rgba(206,226,255,.34);padding:0 2px 4px}
 #ltb.on{animation:lfio .4s .5s ease forwards}
 @keyframes lfio{to{opacity:1}}
+.card .jd{font-size:26px;font-weight:900;line-height:1.35;color:#6ee7b7;margin:0 0 14px;
+ padding:10px 14px;border-radius:10px;background:rgba(110,231,183,.1);
+ box-shadow:inset 0 0 0 2px rgba(110,231,183,.3)}
+/* ===== 結果カード（11/26 改訂：順位・課題名・判定の3点）===== */
+#cards{top:272px;gap:30px}
+#cards .card{flex:1 1 0;min-width:0;max-height:none;height:auto;min-height:300px;padding:0;overflow:visible;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ border-radius:22px;border:2px solid rgba(159,210,255,.3);background:rgba(255,255,255,.055)}
+.card .rk{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;white-space:nowrap;
+ background:none;border:0;border-radius:0;padding:0;align-self:auto;
+ margin:12px 0 0;line-height:1;color:#ffd062}
+.card .rkw{display:flex;align-items:center;justify-content:center}
+.card.m2 .rk{color:#dde7f3}
+.card.m3 .rk{color:#e9ad73}
+.card .rkn{display:flex;flex-direction:column;align-items:center;line-height:1;gap:4px;margin:0 2px}
+.card .lf{width:40px;height:84px;flex:none;align-self:center;opacity:.95}
+.card .lf.rv{transform:scaleX(-1)}
+.card .rk em{font-style:normal;font-size:20px;font-weight:900;opacity:.85;letter-spacing:.08em}
+.card .rk s{text-decoration:none;font-size:16px;font-weight:900;color:inherit;opacity:.8;letter-spacing:.22em;text-indent:.22em;margin-top:-4px}
+.card .rk b{font-size:50px;font-weight:900;letter-spacing:-.02em;color:inherit}
+.card .rk i{position:absolute;right:-6px;top:2px;font-style:normal;font-size:20px;font-weight:900;color:#a9d8ff}
+.card .nm{font-size:50px;font-weight:900;line-height:1.2;color:#fff;text-align:center;
+ align-self:stretch;white-space:nowrap;overflow:hidden;margin:12px 16px 0;letter-spacing:-.015em;text-shadow:0 3px 18px rgba(0,0,0,.5)}
+.card .jd{margin:auto 14px 18px;font-size:31px;font-weight:900;line-height:1.38;text-align:center;
+ color:#cdeaff;padding:16px 10px 0;width:calc(100% - 28px);min-height:92px;text-wrap:balance;word-break:auto-phrase;
+ display:flex;align-items:center;justify-content:center;
+ background:none;box-shadow:none;border-radius:0;
+ text-shadow:0 0 26px rgba(96,186,255,.7),0 0 10px rgba(96,186,255,.45);
+ border-top:2px solid;border-image:linear-gradient(90deg,transparent,rgba(130,200,255,.6) 22%,rgba(130,200,255,.6) 78%,transparent) 1}
+.card .jd span{display:inline}
+#srg{top:648px}
+#lotk{top:778px}
+#lotb{bottom:52px;width:600px;height:104px;font-size:48px}
+#srb{bottom:58px}
 /* ===== 抽選：カプセルがパカッと開く（11/26 案②）===== */
 #lq{position:relative;z-index:2}
 #lorb.shk{animation:lshk .22s ease-in-out}
@@ -366,8 +400,15 @@ body.voting #vmodebg,body.result #vmodebg{display:none}
 #vmode s{text-decoration:none;font-size:30px;line-height:1;width:46px;height:46px;border-radius:50%;
  background:rgba(58,31,0,.16);display:flex;align-items:center;justify-content:center;padding-left:4px}
 #vmode:active{transform:translateY(6px)}
-@keyframes vmp{0%,100%{box-shadow:0 0 0 8px rgba(4,12,28,.72),0 0 0 8px rgba(255,220,140,.28),0 14px 40px rgba(255,160,40,.5)}
- 50%{box-shadow:0 0 0 8px rgba(4,12,28,.72),0 0 0 19px rgba(255,220,140,.16),0 14px 60px rgba(255,195,80,.8)}}
+@keyframes vmp{
+ 0%,100%{transform:scale(1);border-color:rgba(255,255,255,.82);
+   background:linear-gradient(180deg,#f7c966,#eda521 48%,#cf7f06);
+   box-shadow:0 0 0 8px rgba(4,12,28,.6),0 0 0 16px rgba(255,200,90,.1),
+     0 0 50px 8px rgba(255,170,45,.35),0 14px 40px rgba(0,0,0,.5)}
+ 50%{transform:scale(1.045);border-color:#fff;
+   background:linear-gradient(180deg,#fffdf2,#ffe07a 48%,#ffb41c);
+   box-shadow:0 0 0 8px rgba(4,12,28,.5),0 0 0 26px rgba(255,238,175,.55),0 0 0 48px rgba(255,205,90,.24),
+     0 0 170px 56px rgba(255,208,100,1),0 16px 60px rgba(255,170,45,.85)}}
 body.voting #vmode,body.result #vmode{display:none}
 #s2k{font-variant-numeric:tabular-nums}
 </style>
@@ -393,7 +434,7 @@ body.voting #vmode,body.result #vmode{display:none}
     <div id="s2w"><span class="st">現在の1位</span></div>
     <div id="s2n"></div>
     <div id="s2c"><span id="cn">0</span><small>票</small></div>
-    <div id="s2e">あなたの現場は、どうですか。</div>
+    <div id="s2e">この課題、あなたの現場にもありますか？</div>
     <div id="s2g"></div>
   </div>
 
@@ -406,8 +447,8 @@ body.voting #vmode,body.result #vmode{display:none}
   </div>
 
   <div class="sc" id="s3"><div class="s3w">
-    <div class="kicker">今日の動きを、10秒でリプレイ</div>
-    <h1 style="text-align:left;left:110px;font-size:54px;top:146px">ランキングは、こう動いた。</h1>
+    <div class="kicker">投票で変わる、現場の課題ランキング。</div>
+    <h1 style="text-align:left;left:110px;font-size:50px;top:146px">ランキングの変動を、10秒で振り返る。</h1>
     <div id="clkl">時刻</div><div id="clk">10:00</div>
     <div id="race"></div>
     <div id="gyaku"><span>1位が入れ替わりました</span></div>
@@ -416,7 +457,7 @@ body.voting #vmode,body.result #vmode{display:none}
   <div class="sc" id="s4">
     <div id="aruk"><span>現場あるある</span></div>
     <div id="aru"></div>
-    <div id="arus">その課題、一票にしませんか。</div>
+    <div id="arus">その課題、他の現場でも起きているかも<br><b>成形現場のリアルな声を、ランキングに。</b></div>
   </div>
 
   <div class="sc" id="sr">
@@ -426,7 +467,7 @@ body.voting #vmode,body.result #vmode{display:none}
     <div id="cards"></div>
     <div id="srg"></div>
     <div id="lotk">全員に景品があります</div>
-    <button id="lotb" type="button">抽選をする<span class="gl"></span></button>
+    <button id="lotb" type="button">抽選する<span class="gl"></span></button>
     <button id="srb" type="button">最初の画面に戻る</button>
   </div>
 
@@ -473,24 +514,24 @@ const VOTE_OFF={bg:'radial-gradient(circle at 32% 27%,#8fa9cd,#415f8c 58%,#1d335
 const VOTE_ON ={bg:'radial-gradient(circle at 32% 27%,#fff0b8,#ffc23d 56%,#c87d05)',
                 glow:'0 0 0 8px #fff,0 0 62px rgba(255,200,90,.85)'};
 const W=[
-{g:0,n:'寸法バラツキ',o:'寸法<br>バラツキ',v:38,w:1,c1:'金型の温度が場所や時間でばらつくと、樹脂の冷え方が変わり、寸法も動きます。',c2:'金型に入る水の温度と流量を一定に保つことが、寸法の安定につながります。'},
-{g:0,n:'ヒケ・ソリ',o:'ヒケ・ソリ',v:29,w:1,c1:'肉厚の部分で冷え方が偏ると、収縮の差がヒケや反りとして出ます。',c2:'金型内の水路の詰まりや流量不足は、その冷え方の偏りにつながります。'},
-{g:0,n:'外観不良',o:'外観不良',v:17,w:1,c1:'金型表面の温度ムラは、ツヤの差や転写のムラとして表に出ます。',c2:'水温の変動と流量の偏りが、その表面温度のムラにつながります。'},
-{g:0,n:'充填不足',o:'充填不足',v:14,w:1,c1:'金型が冷えすぎると樹脂の流れが早く止まり、端まで充填されません。',c2:'狙いの型温を保てているか、水温の設定と実測を見比べる余地があります。'},
-{g:0,n:'バリ・ウエルド',o:'バリ・<br>ウエルド',v:11,w:1,c1:'型温が低いほど樹脂の流動性は落ち、合流部に線が残りやすくなります。',c2:'型温を上げずに済ませるには、冷却側のムラを先に減らすことが近道です。'},
-{g:0,n:'突発不良',o:'突発不良',v:16,w:1,c1:'前ぶれのない不良は、設備側の状態が静かに変わっていることがあります。',c2:'水温や流量の変化は、その予兆として先に表れることがあります。'},
-{g:1,n:'季節の条件変動',o:'季節の<br>条件変動',v:34,w:1,c1:'外気温が変われば冷却水の温度も変わり、同じ設定でも型温は変わります。',c2:'季節によらず水温を一定に保てれば、条件出しのやり直しが減ります。'},
-{g:1,n:'朝の立ち上げロス',o:'朝の<br>立ち上げロス',v:31,w:1,c1:'夜間に冷えた金型と配管は、温まるまで条件が安定しません。',c2:'立ち上げ時の水温の動きを見ておくと、捨てショットを減らす手がかりになります。'},
-{g:1,n:'昼夜の品質差',o:'昼夜の<br>品質差',v:13,w:1,c1:'日中と夜間で外気温が変われば、冷却水の温度も動きます。',c2:'時間帯ごとの水温を見ておくと、ばらつきの原因を絞れます。'},
-{g:1,n:'冷却時間が長い',o:'冷却時間が<br>長い',v:22,w:1,c1:'冷却の時間は、サイクル全体の大きな部分を占めます。',c2:'冷えにくい状態を時間で補っていないか、水側から見直す余地があります。'},
-{g:1,n:'条件出し属人化',o:'条件出し<br>属人化',v:19,w:0,c1:'条件出しがベテランの勘に頼ると、人が変われば品質も変わります。',c2:'冷却側の状態が数値で見えれば、判断の根拠を共有できます。'},
-{g:2,n:'スケール・錆',o:'スケール・錆',v:24,w:1,c1:'水質が悪化すると、配管や金型の中にスケールや錆が付きます。',c2:'付着は水路を狭め、熱の伝わりを落とします。水質の管理は冷却の土台です。'},
-{g:2,n:'水量・水温変動',o:'水量・<br>水温変動',v:20,w:1,c1:'ポンプやバルブの状態で、系統ごとに流量と水温の差が生まれます。',c2:'系統ごとに測れば、どの水路が効いていないかがわかります。'},
-{g:2,n:'設備老朽化・停止',o:'設備老朽化<br>・停止',v:15,w:1,c1:'チラーやポンプの不調は、前ぶれなく生産を止めます。',c2:'水温や流量の変化が、不調の予兆として先に出ることがあります。'},
-{g:2,n:'電気代・保全費増',o:'電気代・<br>保全費増',v:26,w:1,c1:'冷却設備は、工場で使う電力の大きな部分を占めます。',c2:'必要以上に冷やしていないか、設定と実測を見比べる余地があります。'},
-{g:3,n:'原料価格の高騰',o:'原料価格の<br>高騰',v:21,w:0,c1:'材料費が上がるほど、不良で捨てる一個の重さが増します。',c2:'冷却を安定させて不良を減らすことは、そのまま材料のロス削減になります。'},
-{g:3,n:'現場の人手不足',o:'現場の<br>人手不足',v:27,w:0,c1:'人が減るほど、勘と経験に頼る工程が負担になります。',c2:'冷却側の状態が数値で見えれば、少ない人数でも判断を共有できます。'},
-{g:3,n:'脱炭素・CO₂削減',o:'脱炭素<br>CO₂削減',v:12,w:1,c1:'工場の電力のうち、冷却設備が占める割合は小さくありません。',c2:'過剰な冷却を見直すことは、電力とCO₂の両方に効きます。'}
+{g:0,n:'寸法バラツキ',o:'寸法<br>バラツキ',v:38,w:1,j:'冷却の均一化で安定化を支援',c1:'金型の温度が場所や時間でばらつくと、樹脂の冷え方が変わり、寸法も動きます。',c2:'金型に入る水の温度と流量を一定に保つことが、寸法の安定につながります。'},
+{g:0,n:'ヒケ・ソリ',o:'ヒケ・ソリ',v:29,w:1,j:'金型冷却の改善で品質安定へ',c1:'肉厚の部分で冷え方が偏ると、収縮の差がヒケや反りとして出ます。',c2:'金型内の水路の詰まりや流量不足は、その冷え方の偏りにつながります。'},
+{g:0,n:'外観不良',o:'外観不良',v:17,w:1,j:'冷却ムラの改善が品質向上のヒントに',c1:'金型表面の温度ムラは、ツヤの差や転写のムラとして表に出ます。',c2:'水温の変動と流量の偏りが、その表面温度のムラにつながります。'},
+{g:0,n:'充填不足',o:'充填不足',v:14,w:1,j:'温度環境の安定化から改善を支援',c1:'金型が冷えすぎると樹脂の流れが早く止まり、端まで充填されません。',c2:'狙いの型温を保てているか、水温の設定と実測を見比べる余地があります。'},
+{g:0,n:'バリ・ウエルド',o:'バリ・<br>ウエルド',v:11,w:1,j:'冷却条件の安定化から品質改善へ',c1:'型温が低いほど樹脂の流動性は落ち、合流部に線が残りやすくなります。',c2:'型温を上げずに済ませるには、冷却側のムラを先に減らすことが近道です。'},
+{g:0,n:'突発不良',o:'突発不良',v:16,w:1,j:'冷却環境の変化・異常を管理',c1:'前ぶれのない不良は、設備側の状態が静かに変わっていることがあります。',c2:'水温や流量の変化は、その予兆として先に表れることがあります。'},
+{g:1,n:'季節の条件変動',o:'季節の<br>条件変動',v:34,w:1,j:'季節による冷却条件の変化を抑制',c1:'外気温が変われば冷却水の温度も変わり、同じ設定でも型温は変わります。',c2:'季節によらず水温を一定に保てれば、条件出しのやり直しが減ります。'},
+{g:1,n:'朝の立ち上げロス',o:'朝の<br>立ち上げロス',v:31,w:1,j:'立ち上げ時の冷却環境を安定化',c1:'夜間に冷えた金型と配管は、温まるまで条件が安定しません。',c2:'立ち上げ時の水温の動きを見ておくと、捨てショットを減らす手がかりになります。'},
+{g:1,n:'昼夜の品質差',o:'昼夜の<br>品質差',v:13,w:1,j:'水温変動を抑え、品質安定を支援',c1:'日中と夜間で外気温が変われば、冷却水の温度も動きます。',c2:'時間帯ごとの水温を見ておくと、ばらつきの原因を絞れます。'},
+{g:1,n:'冷却時間が長い',o:'冷却時間が<br>長い',v:22,w:1,j:'冷却能力・水量の見直しで改善へ',c1:'冷却の時間は、サイクル全体の大きな部分を占めます。',c2:'冷えにくい状態を時間で補っていないか、水側から見直す余地があります。'},
+{g:1,n:'条件出し属人化',o:'条件出し<br>属人化',v:19,w:1,j:'冷却条件の安定化・監視を支援',c1:'条件出しがベテランの勘に頼ると、人が変われば品質も変わります。',c2:'冷却側の状態が数値で見えれば、判断の根拠を共有できます。'},
+{g:2,n:'スケール・錆',o:'スケール・錆',v:24,w:1,j:'水質管理で配管・水管のトラブル抑制',c1:'水質が悪化すると、配管や金型の中にスケールや錆が付きます。',c2:'付着は水路を狭め、熱の伝わりを落とします。水質の管理は冷却の土台です。'},
+{g:2,n:'水量・水温変動',o:'水量・<br>水温変動',v:20,w:1,j:'冷却水の安定供給・温度管理',c1:'ポンプやバルブの状態で、系統ごとに流量と水温の差が生まれます。',c2:'系統ごとに測れば、どの水路が効いていないかがわかります。'},
+{g:2,n:'設備老朽化・停止',o:'設備老朽化<br>・停止',v:15,w:1,j:'冷却設備の更新・改善で安定稼働へ',c1:'チラーやポンプの不調は、前ぶれなく生産を止めます。',c2:'水温や流量の変化が、不調の予兆として先に出ることがあります。'},
+{g:2,n:'電気代・保全費増',o:'電気代・<br>保全費増',v:26,w:1,j:'冷却設備の運転・管理を見直し',c1:'冷却設備は、工場で使う電力の大きな部分を占めます。',c2:'必要以上に冷やしていないか、設定と実測を見比べる余地があります。'},
+{g:3,n:'原料価格の高騰',o:'原料価格の<br>高騰',v:21,w:0,j:'冷却安定で不良と材料ロスを削減',c1:'材料費が上がるほど、不良で捨てる一個の重さが増します。',c2:'冷却を安定させて不良を減らすことは、そのまま材料のロス削減になります。'},
+{g:3,n:'現場の人手不足',o:'現場の<br>人手不足',v:27,w:1,j:'管理・保全の省力化を冷却面から支援',c1:'人が減るほど、勘と経験に頼る工程が負担になります。',c2:'冷却側の状態が数値で見えれば、少ない人数でも判断を共有できます。'},
+{g:3,n:'脱炭素・CO₂削減',o:'脱炭素<br>CO₂削減',v:12,w:1,j:'冷却設備の省エネ化で削減を支援',c1:'工場の電力のうち、冷却設備が占める割合は小さくありません。',c2:'過剰な冷却を見直すことは、電力とCO₂の両方に効きます。'}
 ].map((x,i)=>Object.assign(x,{i}));
 var mode='idle';                     /* idle / vote / result */
 let people=128,lotN=0,lotWin=0;      /* 画面に出すのは累計 */
@@ -741,7 +782,7 @@ function raceStep(s){const m=Math.max(1,...tl.map(a=>a[STEPS-1]));const cu=rows.
 function enterS3(){clearInterval(rTimer);rTimer=null;buildRace();raceStep(0);let s=0;clearInterval(rTimer);rTimer=setInterval(()=>{s++;if(s>=STEPS){clearInterval(rTimer);return}raceStep(s)},115)}
 
 /* ================= あるある ================= */
-const ARU=[['朝イチの<em>1ショット目</em>、','毎回、祈っていませんか。'],['今年の<em>猛暑</em>、','現場は大丈夫でしたか。'],['その不良、<em>水</em>が','教えてくれているかも。'],['条件は同じ。','なのに、<em>なぜか出る</em>。']];let ai=0;
+const ARU=[['朝イチの<em>1ショット目</em>、','毎回、祈っていませんか。'],['今年の<em>猛暑</em>、','現場は大丈夫でしたか。'],['条件は同じ。','なのに、<em>なぜか出る</em>。']];let ai=0;
 function enterS4(){const a=$('aru');a.classList.remove('go');a.innerHTML=ARU[ai++%ARU.length].map(l=>`<span class="ln"><i>${l}</i></span>`).join('');fitLine(a,124,56,'.ln i');void a.offsetWidth;a.classList.add('go');
   flash(.18,'140,215,255');shakeIt(5);setTimeout(()=>{if(cur===3){flash(.18,'140,215,255');shakeIt(5)}},430)}
 
@@ -779,7 +820,7 @@ function submit(){snd('submit');
   if(!sel.length||mode!=='vote')return;mode='result';
   const chosen=sel.slice(),before=chosen.map(w=>rankOf(w));
   people++;document.body.classList.remove('voting','has-sel');document.body.classList.add('result');chosen.forEach(w=>w.el.classList.remove('sel'));
-  $('s1k').textContent='ありがとうございます';$('s1h').innerHTML='<em>一票</em>、入ります。';
+  $('s1k').textContent='投票ありがとうございます！';$('s1h').innerHTML='あなたの回答が<em>ランキングに反映</em>されます。';
   $('s1s').innerHTML='';fitLine($('s1h'),82,44);
   chosen.forEach((w,k)=>dropBall(w,k*430,true));
   const t=chosen.length*430+1100;
@@ -803,6 +844,7 @@ function charge(done){
  r.setProperty('--f-h3',px(22));r.setProperty('--f-p',px(25));
  r.setProperty('--f-pm',px(12));r.setProperty('--f-srg',px(35));})();
 const BFP=parseFloat(getComputedStyle(stage).getPropertyValue('--f-p'))||25;
+const LAUREL='<svg class="lf" viewBox="0 0 58 100" preserveAspectRatio="xMidYMid meet"><path d="M50 93 Q1 58 29 4" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" opacity=".9"/><g fill="currentColor"><ellipse cx="31.3" cy="89.4" rx="10.4" ry="5.2" transform="rotate(-175.4 31.3 89.4)"/><ellipse cx="18.1" cy="72.4" rx="10.4" ry="5.2" transform="rotate(-159.8 18.1 72.4)"/><ellipse cx="10.8" cy="53.3" rx="10.4" ry="5.2" transform="rotate(-141.3 10.8 53.3)"/><ellipse cx="10.1" cy="32.7" rx="10.4" ry="5.2" transform="rotate(-123.3 10.1 32.7)"/><ellipse cx="14.7" cy="13.5" rx="10.4" ry="5.2" transform="rotate(-110.1 14.7 13.5)"/></g></svg>';
 function fitCards(){const st=stage.style,box=$('cards');
   const apply=v=>{st.setProperty('--f-p',v+'px');
     st.setProperty('--f-h3',Math.max(15,Math.round(v*.84))+'px');
@@ -810,7 +852,15 @@ function fitCards(){const st=stage.style,box=$('cards');
   let fp=BFP;apply(fp);
   for(let i=0;i<12&&fp>13;i++){let over=false;
     box.querySelectorAll('.card').forEach(c=>{if(c.scrollHeight>c.clientHeight+1)over=true});
-    if(!over)break;fp-=1;apply(fp)}}
+    if(!over)break;fp-=1;apply(fp)}
+  /* 課題名は1行で収める。幅が足りないときだけ少しずつ詰める */
+  box.querySelectorAll('.card .nm').forEach(e=>{
+    for(let f=50;f>=32;f--){e.style.fontSize=f+'px';if(e.scrollWidth<=e.clientWidth)break}});
+  /* 判定文はできるだけ1行。入らなければ折り返す */
+  box.querySelectorAll('.card .jd').forEach(e=>{e.style.whiteSpace='nowrap';let ok=false;
+    for(let f=31;f>=25;f--){e.style.fontSize=f+'px';if(e.scrollWidth<=e.clientWidth){ok=true;break}}
+    if(!ok){e.style.whiteSpace='normal';e.style.fontSize='29px'}})
+}
 
 /* ---- 音（WebAudioで合成。音源ファイルなし＝オフラインで確実に鳴る） ----
    待機中は鳴らさない。来場者が触ったときだけ。
@@ -873,20 +923,22 @@ function kk(t){
 function showResult(chosen,before){setTimeout(()=>snd('result'),260);
   const box=$('cards');box.innerHTML='';box.className='n'+chosen.length;const m=maxV();
   let up=false;
-  chosen.forEach((w,k)=>{const now=rankOf(w),d=before[k]-now;if(d>0)up=true;const c=heatCss(w.v/m);
-    const el=document.createElement('div');el.className='card';el.style.animationDelay=(k*.13)+'s';
-    el.innerHTML=`<div class="hd"><div class="dot" style="background:${c.bg};box-shadow:${c.glow}">${k+1}</div><div class="nm">${w.n}</div></div>`+
-      `<div class="rk"><b>いま ${now}位</b>${d>0?`<i>▲${d}</i>`:''}</div>`+
-      `<h3>なぜ起きるか</h3><p>${kk(w.c1)}</p><h3>冷却でどう変わるか</h3><p>${kk(w.c2)}</p>`;
+  /* 順位の高い順にならべ、メダル・課題名・判定の3点だけにする */
+  const ord=chosen.map((w,k)=>({w,b:before[k]})).sort((a,b)=>rankOf(a.w)-rankOf(b.w));
+  ord.forEach((o,k)=>{const w=o.w,now=rankOf(w),d=o.b-now;if(d>0)up=true;
+    const el=document.createElement('div');el.className='card m'+(k+1);el.style.animationDelay=(k*.13)+'s';
+    el.innerHTML=`<div class="rk"><span class="rkw">${LAUREL}<span class="rkn"><em>いま</em><b>${now}</b></span>${LAUREL.replace('class="lf"','class="lf rv"')}</span><s>RANKING</s>${d>0?`<i>▲${d}</i>`:''}</div>`+
+      `<div class="nm">${w.n}</div>`+
+      `<div class="jd">${kk(w.j)}</div>`;
     box.appendChild(el);void el.offsetWidth;el.classList.add('go')});
-  $('srk').textContent='投票ありがとうございます';
-  $('srh').textContent='あなたが選んだ課題の、いまの順位です。';
+  $('srk').textContent='投票ありがとうございます！';
+  $('srh').textContent='あなたが選んだ課題の、今の順位です。';
   const st=$('stamp');st.classList.remove('go');
   if(up){void st.offsetWidth;st.classList.add('go');confetti(70,SW/2,220);FX.raySpd=1.6}
   /* 冷却で解ける課題が含まれるときだけ、ひとこと案内する */
   const g=$('srg'),hit=chosen.some(w=>w.w);
   g.style.display=hit?'':'none';
-  g.innerHTML='ブース内に、<em>解決のヒント</em>があります。';
+  g.innerHTML='冷却環境の見直しが、<em>課題解決のヒント</em>になるかもしれません。<br>ブース展示をぜひご覧ください。';
   SC.forEach(s=>$(s.id).classList.remove('on'));$('sr').classList.add('on');$('s1').classList.remove('on');
   $('sr').classList.remove('done');$('lot').classList.remove('on');fitCards();
   clearTimeout(rtm);rtm=setTimeout(endVote,34000)}
