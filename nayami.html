@@ -499,7 +499,7 @@ body.voting #vmode,body.result #vmode{display:none}
   </div>
 
   <div id="adm"><div id="admb"><button id="admc" type="button">CSVをコピー</button><button id="admsnd" type="button">音：オン</button><button id="admx" type="button">閉じる</button></div>
-    <h2>投票の集計<span id="admv">版 1127-04</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
+    <h2>投票の集計<span id="admv">版 1127-05</span></h2><p id="admn"></p><p id="admp"></p><div id="admt"></div><textarea id="admcsv" readonly></textarea></div>
   <div id="chg"><div id="chgt">集計中…</div><div id="chgb"><div id="chgf"></div></div></div>
   <canvas id="fxc"></canvas>
   <div id="hint">気になる課題をタップしてください</div>
@@ -678,7 +678,7 @@ W.forEach(w=>{const e=document.createElement('div');e.className='orb';
   e.addEventListener('pointerdown',ev=>{ev.stopPropagation();pick(w)})});
 /* 本日と、前日までを足した累計。初日は累計を出さない */
 function totalAll(){try{const a=loadAll(),t=today();let n=0;
-  Object.keys(a).forEach(d=>{if(d!==t)n+=(a[d].p||0)});return n}catch(e){return 0}}
+  Object.keys(a).forEach(d=>{if(d!==t&&d>=EVENT_START)n+=(a[d].p||0)});return n}catch(e){return 0}}
 function chipTxt(){const pv=totalAll(),b='本日 '+people.toLocaleString()+'人';
   return pv>0?b+'<s></s><i>累計 '+(pv+people).toLocaleString()+'人</i>':b}
 function paint(){const m=maxV(),top=W.reduce((a,b)=>b.v>a.v?b:a),K=fitK();
@@ -1027,6 +1027,8 @@ $('ltb').addEventListener('pointerdown',e=>{e.stopPropagation();endVote()});
 const DEMO=new URLSearchParams(location.search).get('demo')!=='0';
 /* 会期 2026/12/1(火)〜5(土) 10:00〜17:00、最終日のみ16:00。変更はここだけ */
 const HALL={open:10*60,close:17*60,lastDay:'2026-12-05',lastClose:16*60};
+/* 会期の初日。これより前の日（テストやリハーサル）は累計・前日結果・CSVに含めない */
+const EVENT_START='2026-12-01';
 const hallClose=()=>today()===HALL.lastDay?HALL.lastClose:HALL.close;
 /* ?display=1 で表示専用（50インチ）。投票は受け付けない */
 const VIEW=new URLSearchParams(location.search).get('display')==='1';
@@ -1047,7 +1049,7 @@ function restoreDay(){const d=loadAll()[today()];
   return false}
 /* 前日までで、いちばん新しい日の結果（昨日の1位の場面で使う）*/
 function prevDay(){try{const a=loadAll(),t=today();
-  const ds=Object.keys(a).filter(d=>d<t&&a[d]&&Array.isArray(a[d].v)&&a[d].v.length===W.length).sort();
+  const ds=Object.keys(a).filter(d=>d<t&&d>=EVENT_START&&a[d]&&Array.isArray(a[d].v)&&a[d].v.length===W.length).sort();
   if(!ds.length)return null;const d=ds[ds.length-1],x=a[d];
   let bi=0;x.v.forEach((n,i)=>{if(n>x.v[bi])bi=i});
   if(!x.v[bi])return null;
@@ -1137,11 +1139,11 @@ if(netLive()){
 }
 
 /* ================= 集計パネル（右上を3回タップ） ================= */
-function csvAll(){const a=loadAll(),ds=Object.keys(a).sort();
+function csvAll(){const a=loadAll(),ds=Object.keys(a).filter(d=>d>=EVENT_START).sort();
   const head=['日付','投票した人数','抽選した人数','あたり','参加賞',...W.map(w=>w.n)].join(',');
   return [head,...ds.map(d=>{const n=a[d].n||0,w=a[d].w||0;
     return [d,a[d].p,n,w,n-w,...a[d].v].join(',')})].join('\n')}
-function openAdm(){const a=loadAll(),ds=Object.keys(a).sort();
+function openAdm(){const a=loadAll(),ds=Object.keys(a).filter(d=>d>=EVENT_START).sort();
   $('admn').textContent=netState();
   $('admp').textContent=ds.length?`${ds.length}日分を記録しています。会期ぶんがすべて残ります。この画面を1枚スクリーンショットしておけば、データが消えても数字は残ります。`:'まだ保存されたデータがありません。';
   const md=d=>d.slice(5).replace('-','/');
